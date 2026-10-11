@@ -102,6 +102,9 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .bud:first-child{border-top:0}
 .bud label{font-weight:600}
 .bud input{width:100%;box-sizing:border-box}
+.budr{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.addbud{padding:14px;display:flex;flex-direction:column;gap:12px}
+.addbud select,.addbud input{width:100%;box-sizing:border-box}
 input,select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0}
 
 .note{font-size:.82rem;color:var(--muted);padding-inline:4px}
@@ -318,6 +321,19 @@ function txList(list) {
   return html;
 }
 
+const EXTRA_COLORS = ["#C2185B","#00897B","#5E35B1","#7CB342","#F4511E","#3949AB","#D4A017","#6D4C41"];
+const catColor = c => CAT_COLORS[c] || EXTRA_COLORS[[...c].reduce((h,ch)=>(h*31+ch.charCodeAt(0))>>>0,7)%EXTRA_COLORS.length];
+const expenseCats = () => [...CATS.gasto.map(x=>x[0]), ...(S.profile.customCats||[])];
+function budRows(m) {
+  const cats = expenseCats().filter(c => S.profile.budgets?.[c]);
+  if (!cats.length) return `<div class="empty"><h3>Aún no tienes presupuestos</h3><span>Agrega uno abajo para controlar cuánto gastas en cada categoría.</span></div>`;
+  return cats.map((c,i) => {
+    const id = "b-"+i; const spent = m.byCat[c]||0;
+    return `<div class="bud"><div class="ico" style="background:${catColor(c)};color:#fff">${esc(abbr(c))}</div>
+      <label for="${id}">${esc(c)}<br><span class="note" style="padding:0;font-weight:400">Gastado: ${fmt(spent)}</span></label>
+      <div class="budr"><input id="${id}" data-bud="${esc(c)}" inputmode="decimal" value="${S.profile.budgets[c]}"><button class="del" data-delbud="${esc(c)}">Eliminar</button></div></div>`;
+  }).join("");
+}
 const CAT_COLORS = {"Comida":"#E4572E","Transporte":"#3B5BDB","Vivienda":"#8E44AD","Servicios":"#1597A8","Salud":"#E0457B","Educación":"#E6A100","Ocio":"#20A866","Compras":"#FF8C42","Deudas":"#8B5A2B","Otros":"#8A93AD"};
 function donut(m) {
   const rows = Object.entries(m.byCat).sort((a,b)=>b[1]-a[1]);
@@ -326,10 +342,10 @@ function donut(m) {
   const gap = rows.length>1 ? 0.8 : 0;
   const segs = rows.map(([c,v]) => {
     const p = v/total*100;
-    const seg = `<circle cx="21" cy="21" r="15.9155" fill="none" stroke="${CAT_COLORS[c]||"#8A93AD"}" stroke-width="6" stroke-dasharray="${Math.max(p-gap,0.01)} ${100-Math.max(p-gap,0.01)}" stroke-dashoffset="${-acc}"></circle>`;
+    const seg = `<circle cx="21" cy="21" r="15.9155" fill="none" stroke="${catColor(c)}" stroke-width="6" stroke-dasharray="${Math.max(p-gap,0.01)} ${100-Math.max(p-gap,0.01)}" stroke-dashoffset="${-acc}"></circle>`;
     acc += p; return seg;
   }).join("");
-  const legend = rows.map(([c,v],i) => `<div class="${i===0?"top":""}"><i style="background:${CAT_COLORS[c]||"#8A93AD"}"></i><span>${esc(c)}</span><b>${Math.round(v/total*100)}%</b></div>`).join("");
+  const legend = rows.map(([c,v],i) => `<div class="${i===0?"top":""}"><i style="background:${catColor(c)}"></i><span>${esc(c)}</span><b>${Math.round(v/total*100)}%</b></div>`).join("");
   return `<div class="donut-wrap"><div class="donut"><svg viewBox="0 0 42 42" role="img" aria-label="Gastos por categoría">
       <circle cx="21" cy="21" r="15.9155" fill="none" stroke="var(--soft)" stroke-width="6"></circle>${segs}</svg>
       <div class="ctr"><small>Gastado</small><b>${fmt0(m.exp)}</b></div></div>
@@ -357,12 +373,16 @@ function render() {
     v.innerHTML = `<div class="sec"><div class="sec-h"><h2>¿En qué se va tu dinero?</h2></div>
       <div class="panel">${donut(m)}</div></div>
       <div class="sec" style="margin-top:18px"><div class="sec-h"><h2>Presupuesto mensual</h2></div>
-      <p class="note">Pon un límite por categoría. Te avisamos cuando llegues al 85%.</p>
-      <div class="panel">${CATS.gasto.map(([c,a])=>{
-        const id="b-"+a; const val = S.profile.budgets?.[c]||"";
-        const spent = m.byCat[c]||0;
-        return `<div class="bud"><div class="ico">${a}</div><label for="${id}">${c}<br><span class="note" style="padding:0;font-weight:400">Gastado: ${fmt(spent)}</span></label>
-          <input id="${id}" data-bud="${esc(c)}" inputmode="decimal" placeholder="Sin límite" value="${val}"></div>`;}).join("")}</div>
+      <p class="note">Pon un límite mensual por categoría. Te avisamos cuando llegues al 85%.</p>
+      <div class="panel">${budRows(m)}</div>
+      <div class="sec-h" style="margin-top:8px"><h2>Agregar presupuesto</h2></div>
+      <div class="panel addbud">
+        <div class="field"><label for="nbCat">Categoría</label><select id="nbCat">${expenseCats().filter(c=>!S.profile.budgets?.[c]).map(c=>`<option>${esc(c)}</option>`).join("")}<option value="__new">+ Nueva categoría…</option></select></div>
+        <div class="field" id="nbNameBox" hidden><label for="nbName">Nombre de la nueva categoría</label><input id="nbName" maxlength="24" placeholder="Ej. Mascotas"></div>
+        <div class="field"><label for="nbAmt">Límite mensual</label><input id="nbAmt" inputmode="decimal" placeholder="0.00"></div>
+        <div class="err" id="nbErr"></div>
+        <button class="btn" id="nbAdd">Agregar presupuesto</button>
+      </div>
       <div class="sec-h" style="margin-top:8px"><h2>Este mes</h2></div><div class="panel">${catRows(m)}</div></div>`;
   } else {
     v.innerHTML = `<div class="sec"><div class="sec-h"><h2>Ajustes</h2></div>
@@ -390,6 +410,25 @@ document.addEventListener("click", async e => {
     if (!b.classList.contains("arm")) { b.classList.add("arm"); b.textContent="¿Eliminar?"; setTimeout(()=>{ if(b.isConnected){b.classList.remove("arm"); b.textContent="Eliminar";} },3000); return; }
     try { await store.remove(b.dataset.del); toast("Movimiento eliminado"); } catch(err){ toast("No se pudo eliminar. Intenta de nuevo."); }
   }
+  else if (b.dataset.delbud) {
+    if (!b.classList.contains("arm")) { b.classList.add("arm"); b.textContent="¿Eliminar?"; setTimeout(()=>{ if(b.isConnected){b.classList.remove("arm"); b.textContent="Eliminar";} },3000); return; }
+    const c = b.dataset.delbud; const budgets = { ...(S.profile.budgets||{}) }; delete budgets[c];
+    const p = { budgets };
+    if ((S.profile.customCats||[]).includes(c) && !S.txs.some(t=>t.cat===c)) p.customCats = S.profile.customCats.filter(x=>x!==c);
+    await store.setProfile(p); toast("Presupuesto eliminado");
+  }
+  else if (b.id==="nbAdd") {
+    const sel = $("nbCat").value; const isNew = sel==="__new";
+    const name = isNew ? $("nbName").value.trim().replace(/\s+/g," ") : sel;
+    const amt = Math.round(parseFloat(($("nbAmt").value||"").replace(",","."))*100)/100;
+    const all = [...expenseCats(), ...CATS.ingreso.map(x=>x[0])].map(x=>x.toLowerCase());
+    if (isNew && !name) { $("nbErr").textContent="Escribe el nombre de la categoría."; $("nbName").focus(); return; }
+    if (isNew && all.includes(name.toLowerCase())) { $("nbErr").textContent="Ya existe una categoría con ese nombre. Elígela de la lista."; return; }
+    if (!(amt>0)) { $("nbErr").textContent="Escribe un límite mayor que cero."; $("nbAmt").focus(); return; }
+    const p = { budgets: { ...(S.profile.budgets||{}), [name]: amt } };
+    if (isNew) p.customCats = [...(S.profile.customCats||[]), name];
+    await store.setProfile(p); toast("Presupuesto agregado");
+  }
   else if (b.id==="impBtn") { $("impBox").hidden=false; $("impTxt").focus(); }
   else if (b.id==="impGo") {
     try {
@@ -413,21 +452,24 @@ document.addEventListener("input", e => {
   if (e.target.dataset.bud!==undefined) {
     clearTimeout(budTimer);
     budTimer = setTimeout(() => {
-      const budgets = {};
-      document.querySelectorAll("[data-bud]").forEach(i => { const n=parseFloat(i.value.replace(",",".")); if(n>0) budgets[i.dataset.bud]=n; });
+      const budgets = { ...(S.profile.budgets||{}) };
+      let changed = false;
+      document.querySelectorAll("[data-bud]").forEach(i => { const n=parseFloat(i.value.replace(",",".")); if(n>0 && budgets[i.dataset.bud]!==n){ budgets[i.dataset.bud]=n; changed=true; } });
+      if (!changed) return;
       const focusId = document.activeElement?.id;
       store.setProfile({ budgets }).then(()=>{ if(focusId){ const el=$(focusId); el?.focus(); } });
     }, 700);
   }
 });
-document.addEventListener("change", e => { if (e.target.id==="cur") store.setProfile({ currency:e.target.value }); });
+document.addEventListener("change", e => {
+  if (e.target.id==="nbCat") { $("nbNameBox").hidden = e.target.value!=="__new"; if (e.target.value==="__new") $("nbName").focus(); } if (e.target.id==="cur") store.setProfile({ currency:e.target.value }); });
 
 /* ---------- add sheet ---------- */
 let curType = "gasto";
 function setType(t) {
   curType = t;
   $("tGasto").setAttribute("aria-pressed", t==="gasto"); $("tIngreso").setAttribute("aria-pressed", t==="ingreso");
-  $("fCat").innerHTML = CATS[t].map(([c])=>`<option>${c}</option>`).join("");
+  $("fCat").innerHTML = (t==="gasto" ? expenseCats() : CATS.ingreso.map(x=>x[0])).map(c=>`<option>${esc(c)}</option>`).join("");
 }
 function openSheet() {
   setType("gasto"); $("fAmt").value=""; $("fNote").value=""; $("fErr").textContent="";
