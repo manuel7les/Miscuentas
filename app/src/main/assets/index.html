@@ -140,6 +140,16 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .dchip.up{background:color-mix(in srgb,var(--out) 14%,transparent);color:var(--out)}
 .dchip.down{background:color-mix(in srgb,var(--in) 14%,transparent);color:var(--in)}
 .dchip.eq{background:var(--soft);color:var(--muted)}
+.plan{padding:16px;display:flex;flex-direction:column;gap:14px}
+.pv .dchip{font-size:.82rem;padding:5px 12px;white-space:normal;display:inline-block}
+.dchip.ok{background:var(--save-soft);color:var(--save)}
+.ph{display:flex;justify-content:space-between;gap:8px;font-size:.86rem;margin-bottom:6px}
+.ph b{font-weight:600} .ph span{font-weight:700}
+.pt{display:flex;height:16px;border-radius:6px;background:var(--soft);overflow:hidden}
+.pt i{display:block;height:100%}
+.plansum{padding:14px;display:flex;flex-direction:column;gap:8px}
+.plansum .r{display:flex;justify-content:space-between;gap:10px;font-size:.9rem}
+.plansum .r.t{border-top:1px solid var(--line);padding-top:8px;font-weight:700}
 .del{border:0;background:none;color:var(--muted);font-size:.74rem;padding:2px 0}
 .del.arm{color:var(--out);font-weight:700}
 
@@ -464,6 +474,31 @@ function expenseBars(m) {
   return `<div class="hbars" aria-label="Gastos por categoría">${rows.map(([c,v],i)=>`<div class="hb ${i===0?"top":""}"><span class="l">${esc(c)}</span>
     <div class="t"><i style="width:${Math.max(v/max*72,1)}%;background:${catColor(c)}"></i><span>${fmt0(v)} · ${Math.round(v/(m.exp||1)*100)}%</span></div></div>`).join("")}</div>`;
 }
+function planData(m) {
+  const bud = expenseCats().reduce((a,c)=>a+(+S.profile.budgets?.[c]||0),0);
+  const goal = +S.profile.savingsGoal||0;
+  const plan = Math.round((bud+goal)*100)/100, inc = Math.round(m.inc*100)/100;
+  return { bud, goal, plan, inc, diff: Math.round((inc-plan)*100)/100 };
+}
+function planVerdict(d) {
+  if (!d.inc) return { cls:"eq", txt:"Registra tu sueldo en Movimientos para comparar" };
+  if (!d.plan) return { cls:"eq", txt:"Aún no tienes presupuestos ni meta de ahorro" };
+  if (Math.abs(d.diff) < 0.01) return { cls:"down", txt:"Coincide exactamente con tus ingresos" };
+  return d.diff>0 ? { cls:"ok", txt:`Te sobran ${fmt(d.diff)} sin asignar` } : { cls:"up", txt:`Tu plan supera tus ingresos en ${fmt(-d.diff)}` };
+}
+function planChart(m) {
+  const d = planData(m), v = planVerdict(d);
+  if (!d.inc || !d.plan) return `<div class="empty"><h3>${v.txt}</h3><span>Aquí verás si tus presupuestos más tu ahorro coinciden con lo que ganas.</span></div>`;
+  const max = Math.max(d.inc, d.plan);
+  const w = x => (x/max*100).toFixed(2)+"%";
+  return `<div class="plan">
+    <div class="pv"><span class="dchip ${v.cls}">${v.txt}</span></div>
+    <div class="pr"><div class="ph"><b>Ingresos del mes</b><span>${fmt(d.inc)}</span></div><div class="pt"><i style="width:${w(d.inc)};background:var(--in)"></i></div></div>
+    <div class="pr"><div class="ph"><b>Presupuestos + ahorro</b><span>${fmt(d.plan)}</span></div>
+      <div class="pt"><i style="width:${w(d.bud)};background:var(--accent)"></i><i style="width:${w(d.goal)};background:var(--save)"></i></div></div>
+    <div class="legend2"><span><i style="background:var(--accent)"></i>Presupuestos ${fmt0(d.bud)}</span><span><i style="background:var(--save)"></i>Meta de ahorro ${fmt0(d.goal)}</span></div>
+  </div>`;
+}
 function compareChart(m) {
   const pd = new Date(S.month.getFullYear(), S.month.getMonth()-1, 1), pk = ym(pd);
   const prev = {};
@@ -529,6 +564,7 @@ function render() {
       <div class="sec"><div class="sec-h"><h2>¿En qué se va tu dinero?</h2></div><div class="panel">${donut(m)}</div></div>
       <div class="sec" style="margin-top:18px"><div class="sec-h"><h2>Comparado con el mes anterior</h2></div><div class="panel">${compareChart(m)}</div></div>
       <div class="sec" style="margin-top:18px"><div class="sec-h"><h2>Presupuesto del mes</h2><button class="link" data-go="pres">Editar</button></div><div class="panel">${budgetChart(m)}</div></div>
+      <div class="sec" style="margin-top:18px"><div class="sec-h"><h2>Tu plan vs tus ingresos</h2></div><div class="panel">${planChart(m)}</div></div>
       <div class="sec" style="margin-top:18px"><div class="sec-h"><h2>Tu ahorro</h2></div>${savingsPanel(m)}</div>`;
   } else if (S.tab==="movs") {
     const f = S.filter;
@@ -543,7 +579,16 @@ function render() {
       <div class="filters">${[["todos","Todos"],["gasto","Gastos"],["ingreso","Ingresos"],["ahorro","Ahorros"],["tarjeta","Tarjeta"]].map(([k,l])=>`<button data-filter="${k}" aria-pressed="${f===k}">${l}</button>`).join("")}</div>
       <div class="panel">${txList(list)}</div></div>`;
   } else if (S.tab==="pres") {
-    v.innerHTML = `<div class="sec"><div class="sec-h"><h2>Meta de ahorro mensual</h2></div>
+    const pd = planData(m), pv = planVerdict(pd);
+    v.innerHTML = `<div class="sec"><div class="sec-h"><h2>Resumen de tu plan</h2></div>
+      <div class="panel plansum">
+        <div class="r"><span>Presupuestos</span><b>${fmt(pd.bud)}</b></div>
+        <div class="r"><span>Meta de ahorro</span><b class="sav">${fmt(pd.goal)}</b></div>
+        <div class="r t"><span>Total del plan</span><span>${fmt(pd.plan)}</span></div>
+        <div class="r"><span>Ingresos de ${S.month.toLocaleDateString("es-PE",{month:"long"})}</span><b class="pos">${fmt(pd.inc)}</b></div>
+        <div><span class="dchip ${pv.cls}" style="white-space:normal;display:inline-block">${pv.txt}</span></div>
+      </div></div>
+      <div class="sec" style="margin-top:18px"><div class="sec-h"><h2>Meta de ahorro mensual</h2></div>
       <div class="panel goalrow"><div class="ico" style="background:var(--save-soft);color:var(--save)">AH</div>
         <label ${S.editGoal?'for="goalIn"':""}>¿Cuánto quieres ahorrar cada mes?<br><span class="note" style="padding:0;font-weight:400">Este mes: ${fmt(m.sav)}</span></label>
         ${S.editGoal
