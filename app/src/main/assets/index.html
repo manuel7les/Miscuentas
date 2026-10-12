@@ -126,6 +126,20 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .actions button{border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:12px 6px;font-weight:700;font-size:.92rem;display:flex;flex-direction:column;align-items:center;gap:2px}
 .actions button b{font-family:var(--display);font-size:1.4rem;line-height:1}
 .actions .g{color:var(--out)} .actions .i{color:var(--in)} .actions .a{color:var(--save)}
+.legend .lp{font-weight:600;color:var(--muted);font-size:.78rem;margin-left:4px}
+.cmpw{padding:16px;display:flex;flex-direction:column;gap:14px}
+.cmpsum{font-size:.88rem;color:var(--muted)} .cmpsum b{color:var(--ink)} .cmpsum b.neg{color:var(--out)} .cmpsum b.pos{color:var(--in)}
+.cmp .ch{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px;font-size:.88rem}
+.cmp .ch b{font-weight:600}
+.cb{display:flex;align-items:center;gap:8px;height:16px;margin-top:3px}
+.cb i{display:block;height:12px;border-radius:4px}
+.cb.prev i{background:var(--line);height:8px}
+.cb span{font-size:.74rem;font-weight:700;color:var(--ink);white-space:nowrap}
+.cb.prev span{color:var(--muted);font-weight:600}
+.dchip{font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:99px;white-space:nowrap}
+.dchip.up{background:color-mix(in srgb,var(--out) 14%,transparent);color:var(--out)}
+.dchip.down{background:color-mix(in srgb,var(--in) 14%,transparent);color:var(--in)}
+.dchip.eq{background:var(--soft);color:var(--muted)}
 .del{border:0;background:none;color:var(--muted);font-size:.74rem;padding:2px 0}
 .del.arm{color:var(--out);font-weight:700}
 
@@ -139,7 +153,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .filters button{border:1px solid var(--line);background:var(--surface);padding:7px 14px;border-radius:99px;font-size:.86rem;font-weight:500}
 .filters button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 
-.donut-wrap{display:grid;grid-template-columns:150px 1fr;gap:16px;align-items:center;padding:16px}
+.donut-wrap{display:grid;grid-template-columns:1fr;justify-items:center;gap:16px;align-items:center;padding:16px}
 @media (max-width:360px){.donut-wrap{grid-template-columns:1fr;justify-items:center}}
 .donut{position:relative;width:150px;height:150px}
 .donut svg{width:100%;height:100%;transform:rotate(-90deg)}
@@ -436,7 +450,7 @@ function donut(m) {
     const seg = `<circle cx="21" cy="21" r="15.9155" fill="none" stroke="${catColor(c)}" stroke-width="6" stroke-dasharray="${Math.max(p-gap,0.01)} ${100-Math.max(p-gap,0.01)}" stroke-dashoffset="${-acc}"></circle>`;
     acc += p; return seg;
   }).join("");
-  const legend = rows.map(([c,v],i) => `<div class="${i===0?"top":""}"><i style="background:${catColor(c)}"></i><span>${esc(c)}</span><b>${Math.round(v/total*100)}%</b></div>`).join("");
+  const legend = rows.map(([c,v],i) => `<div class="${i===0?"top":""}"><i style="background:${catColor(c)}"></i><span>${esc(c)}</span><b>${fmt0(v)} <small class="lp">${Math.round(v/total*100)}%</small></b></div>`).join("");
   return `<div class="donut-wrap"><div class="donut"><svg viewBox="0 0 42 42" role="img" aria-label="Gastos por categoría">
       <circle cx="21" cy="21" r="15.9155" fill="none" stroke="var(--soft)" stroke-width="6"></circle>${segs}</svg>
       <div class="ctr"><small>Gastado</small><b>${fmt0(m.exp)}</b></div></div>
@@ -449,6 +463,29 @@ function expenseBars(m) {
   const max = rows[0][1];
   return `<div class="hbars" aria-label="Gastos por categoría">${rows.map(([c,v],i)=>`<div class="hb ${i===0?"top":""}"><span class="l">${esc(c)}</span>
     <div class="t"><i style="width:${Math.max(v/max*72,1)}%;background:${catColor(c)}"></i><span>${fmt0(v)} · ${Math.round(v/(m.exp||1)*100)}%</span></div></div>`).join("")}</div>`;
+}
+function compareChart(m) {
+  const pd = new Date(S.month.getFullYear(), S.month.getMonth()-1, 1), pk = ym(pd);
+  const prev = {};
+  for (const t of S.txs) if (t.type==="gasto" && (t.date||"").startsWith(pk)) prev[t.cat] = (prev[t.cat]||0) + t.amount;
+  const pName = pd.toLocaleDateString("es-PE",{month:"long"}), cName = S.month.toLocaleDateString("es-PE",{month:"long"});
+  const cats = [...new Set([...Object.keys(m.byCat), ...Object.keys(prev)])];
+  if (!cats.length) return `<div class="empty"><h3>Sin gastos para comparar</h3><span>Cuando registres gastos en Movimientos verás aquí cómo cambian de un mes a otro.</span></div>`;
+  if (!Object.keys(prev).length) return `<div class="empty"><h3>Sin datos de ${pName}</h3><span>No hay gastos registrados en ${pName}. El próximo mes podrás comparar ${cName} contra el mes anterior.</span></div>`;
+  cats.sort((a,b)=>(m.byCat[b]||0)-(m.byCat[a]||0) || (prev[b]||0)-(prev[a]||0));
+  const max = Math.max(...cats.map(c=>Math.max(m.byCat[c]||0, prev[c]||0)), 1);
+  const totP = Object.values(prev).reduce((a,b)=>a+b,0), dT = m.exp - totP;
+  const rows = cats.map(c => {
+    const v = m.byCat[c]||0, p = prev[c]||0, d = v - p;
+    const chip = d>0 ? `<span class="dchip up">▲ ${fmt0(d)}</span>` : d<0 ? `<span class="dchip down">▼ ${fmt0(-d)}</span>` : `<span class="dchip eq">igual</span>`;
+    return `<div class="cmp"><div class="ch"><b>${esc(c)}</b>${chip}</div>
+      <div class="cb">${v?`<i style="width:${Math.max(v/max*78,1)}%;background:${catColor(c)}"></i>`:""}<span>${fmt0(v)}</span></div>
+      <div class="cb prev">${p?`<i style="width:${Math.max(p/max*78,1)}%"></i>`:""}<span>${fmt0(p)}</span></div></div>`;
+  }).join("");
+  return `<div class="cmpw">
+    <div class="cmpsum">En total gastaste <b>${fmt0(m.exp)}</b> en ${cName}${dT>0?`, <b class="neg">${fmt0(dT)} más</b> que`:dT<0?`, <b class="pos">${fmt0(-dT)} menos</b> que`:", lo mismo que"} en ${pName}.</div>
+    ${rows}
+    <div class="legend2"><span><i style="background:var(--ink)"></i>${cName.charAt(0).toUpperCase()+cName.slice(1)}</span><span><i style="background:var(--line)"></i>${pName.charAt(0).toUpperCase()+pName.slice(1)}</span><span>▲ gastaste más</span><span>▼ gastaste menos</span></div></div>`;
 }
 function budgetChart(m) {
   const cats = expenseCats().filter(c => S.profile.budgets?.[c]);
@@ -490,7 +527,7 @@ function render() {
   if (S.tab==="inicio") {
     v.innerHTML = `
       <div class="sec"><div class="sec-h"><h2>¿En qué se va tu dinero?</h2></div><div class="panel">${donut(m)}</div></div>
-      <div class="sec" style="margin-top:18px"><div class="sec-h"><h2>Gastos por categoría</h2></div><div class="panel">${expenseBars(m)}</div></div>
+      <div class="sec" style="margin-top:18px"><div class="sec-h"><h2>Comparado con el mes anterior</h2></div><div class="panel">${compareChart(m)}</div></div>
       <div class="sec" style="margin-top:18px"><div class="sec-h"><h2>Presupuesto del mes</h2><button class="link" data-go="pres">Editar</button></div><div class="panel">${budgetChart(m)}</div></div>
       <div class="sec" style="margin-top:18px"><div class="sec-h"><h2>Tu ahorro</h2></div>${savingsPanel(m)}</div>`;
   } else if (S.tab==="movs") {
