@@ -489,7 +489,8 @@ function render() {
   if (!S.ready) { v.innerHTML = `<div class="panel"><div class="empty"><span>Cargando tus movimientos…</span></div></div>`; return; }
   if (S.tab==="inicio") {
     v.innerHTML = `
-      <div class="sec"><div class="sec-h"><h2>Gastos por categoría</h2></div><div class="panel">${expenseBars(m)}</div></div>
+      <div class="sec"><div class="sec-h"><h2>¿En qué se va tu dinero?</h2></div><div class="panel">${donut(m)}</div></div>
+      <div class="sec" style="margin-top:18px"><div class="sec-h"><h2>Gastos por categoría</h2></div><div class="panel">${expenseBars(m)}</div></div>
       <div class="sec" style="margin-top:18px"><div class="sec-h"><h2>Presupuesto del mes</h2><button class="link" data-go="pres">Editar</button></div><div class="panel">${budgetChart(m)}</div></div>
       <div class="sec" style="margin-top:18px"><div class="sec-h"><h2>Tu ahorro</h2></div>${savingsPanel(m)}</div>`;
   } else if (S.tab==="movs") {
@@ -505,9 +506,7 @@ function render() {
       <div class="filters">${[["todos","Todos"],["gasto","Gastos"],["ingreso","Ingresos"],["ahorro","Ahorros"],["tarjeta","Tarjeta"]].map(([k,l])=>`<button data-filter="${k}" aria-pressed="${f===k}">${l}</button>`).join("")}</div>
       <div class="panel">${txList(list)}</div></div>`;
   } else if (S.tab==="pres") {
-    v.innerHTML = `<div class="sec"><div class="sec-h"><h2>¿En qué se va tu dinero?</h2></div>
-      <div class="panel">${donut(m)}</div></div>
-      <div class="sec" style="margin-top:18px"><div class="sec-h"><h2>Meta de ahorro mensual</h2></div>
+    v.innerHTML = `<div class="sec"><div class="sec-h"><h2>Meta de ahorro mensual</h2></div>
       <div class="panel goalrow"><div class="ico" style="background:var(--save-soft);color:var(--save)">AH</div>
         <label ${S.editGoal?'for="goalIn"':""}>¿Cuánto quieres ahorrar cada mes?<br><span class="note" style="padding:0;font-weight:400">Este mes: ${fmt(m.sav)}</span></label>
         ${S.editGoal
@@ -529,7 +528,7 @@ function render() {
         <div class="err" id="nbErr"></div>
         <button class="btn" id="nbAdd">Agregar presupuesto</button>
       </div>
-      <div class="sec-h" style="margin-top:8px"><h2>Este mes</h2></div><div class="panel">${catRows(m)}</div></div>`;
+      </div>`;
   } else {
     v.innerHTML = `<div class="sec"><div class="sec-h"><h2>Ajustes</h2></div>
       <div class="panel">
