@@ -6,18 +6,18 @@
 :root{
   --bg:#EEF1F6; --surface:#FFFFFF; --ink:#141B2D; --muted:#5E6782; --line:#DCE1EC;
   --accent:#2F4BD8; --accent-ink:#FFFFFF; --hero:#141B2D; --hero-ink:#F2F4FA;
-  --in:#0E8A5F; --out:#C2412D; --warn:#B7791F; --soft:#E4E8F3;
+  --in:#0E8A5F; --out:#C2412D; --warn:#B7791F; --soft:#E4E8F3; --save:#0B8A7E; --save-soft:#D8F1EC;
   --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
   --body:"Figtree",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#0D1120; --surface:#161C2F; --ink:#E9ECF5; --muted:#9AA3BE; --line:#262E47;
   --accent:#7C93FF; --accent-ink:#0D1120; --hero:#1E2742; --hero-ink:#F2F4FA;
-  --in:#3FCB93; --out:#FF7D66; --warn:#E8B04A; --soft:#20283F; color-scheme:dark}}
+  --in:#3FCB93; --out:#FF7D66; --warn:#E8B04A; --soft:#20283F; --save:#4FD6C2; --save-soft:#173A3A; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0D1120; --surface:#161C2F; --ink:#E9ECF5; --muted:#9AA3BE; --line:#262E47;
   --accent:#7C93FF; --accent-ink:#0D1120; --hero:#1E2742; --hero-ink:#F2F4FA;
-  --in:#3FCB93; --out:#FF7D66; --warn:#E8B04A; --soft:#20283F; color-scheme:dark}
+  --in:#3FCB93; --out:#FF7D66; --warn:#E8B04A; --soft:#20283F; --save:#4FD6C2; --save-soft:#173A3A; color-scheme:dark}
 
 [hidden]{display:none!important}
 img{max-width:100%}
@@ -79,6 +79,29 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .cardsum b{display:block;font-weight:600}
 .cardsum span{font-size:.8rem;color:var(--muted)}
 .cardsum .amt{font-family:var(--display);font-weight:800;font-size:1.15rem}
+.split .wide{grid-column:1/3;display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.sav{color:var(--save)}
+.tx .ico.savico{background:var(--save-soft);color:var(--save)}
+.savp{padding:16px;display:flex;flex-direction:column;gap:14px}
+.savtop{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.savtop small{display:block;font-size:.72rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.savtop .big{font-family:var(--display);font-weight:800;font-size:1.7rem;line-height:1.1;color:var(--save)}
+.savtop .acc{text-align:right}
+.savtop .acc b{font-family:var(--display);font-size:1.1rem;font-weight:800}
+.sbar{height:10px;border-radius:99px;background:var(--soft);overflow:hidden}
+.sbar i{display:block;height:100%;border-radius:99px;background:var(--save)}
+.savmsg{display:flex;justify-content:space-between;gap:8px;font-size:.84rem;color:var(--muted)}
+.chip.ok{background:var(--save-soft);color:var(--save)}
+.months{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;align-items:end;height:150px;padding-top:6px;border-top:1px solid var(--line)}
+.mcol{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;height:100%;min-width:0}
+.mcol .v{font-size:.68rem;font-weight:700;color:var(--muted);white-space:nowrap}
+.mcol .b{width:70%;max-width:34px;border-radius:7px 7px 3px 3px;background:var(--save);opacity:.45;min-height:3px}
+.mcol.cur .b{opacity:1}
+.mcol.cur .v{color:var(--save)}
+.mcol .m{font-size:.72rem;color:var(--muted);text-transform:capitalize}
+.mcol.cur .m{color:var(--ink);font-weight:700}
+.goalrow{display:grid;grid-template-columns:36px 1fr 120px;gap:12px;align-items:center;padding:12px 14px}
+.goalrow input{width:100%;box-sizing:border-box}
 .del{border:0;background:none;color:var(--muted);font-size:.74rem;padding:2px 0}
 .del.arm{color:var(--out);font-weight:700}
 
@@ -130,6 +153,7 @@ input,select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:
 @keyframes up{from{transform:translateY(30px);opacity:.6}to{transform:none;opacity:1}}
 @media (prefers-reduced-motion:reduce){.sheet{animation:none}.meter i{transition:none}}
 .sheet h2{font-size:1.2rem}
+.seg.three{grid-template-columns:1fr 1fr 1fr}
 .seg{display:grid;grid-template-columns:1fr 1fr;background:var(--soft);border-radius:12px;padding:4px;gap:4px}
 .seg button{border:0;background:none;padding:9px;border-radius:9px;font-weight:600;color:var(--muted)}
 .seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
@@ -153,12 +177,13 @@ input,select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:
 
   <section class="hero" aria-label="Resumen del mes">
     <div>
-      <div class="lbl">Saldo del mes</div>
+      <div class="lbl">Disponible del mes</div>
       <div class="big" id="balance">S/ 0.00</div>
     </div>
     <div class="split">
       <div><span class="lbl"><span class="dot" style="background:var(--in)"></span>Ingresos</span><b id="incTot">S/ 0.00</b></div>
       <div><span class="lbl"><span class="dot" style="background:var(--out)"></span>Gastos</span><b id="expTot">S/ 0.00</b></div>
+      <div class="wide" id="savTile" hidden><span class="lbl"><span class="dot" style="background:var(--save)"></span>Ahorraste este mes</span><b id="savTot">S/ 0.00</b></div>
     </div>
     <div class="meter" aria-hidden="true"><i id="meter" style="width:0%"></i></div>
     <small id="meterTxt">Registra tu primer movimiento para ver cuánto te queda.</small>
@@ -180,13 +205,14 @@ input,select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:
 <div class="scrim" id="scrim" hidden>
   <form class="sheet" id="txForm" novalidate>
     <h2 id="sheetTitle">Nuevo movimiento</h2>
-    <div class="seg" role="group" aria-label="Tipo">
+    <div class="seg three" role="group" aria-label="Tipo">
       <button type="button" id="tGasto" aria-pressed="true">Gasto</button>
       <button type="button" id="tIngreso" aria-pressed="false">Ingreso</button>
+      <button type="button" id="tAhorro" aria-pressed="false">Ahorro</button>
     </div>
     <div class="field"><label for="fAmt">Monto</label><input class="amount-in" id="fAmt" inputmode="decimal" placeholder="0.00" autocomplete="off"></div>
     <div class="row2">
-      <div class="field"><label for="fCat">Categoría</label><select id="fCat"></select></div>
+      <div class="field" id="catBox"><label for="fCat">Categoría</label><select id="fCat"></select></div>
       <div class="field"><label for="fDate">Fecha</label><input type="date" id="fDate"></div>
     </div>
     <div class="field" id="payBox"><label>Pagado con</label>
@@ -239,14 +265,14 @@ const store = {
       this.profRef = base;
       this.txCol = base.collection("movimientos");
       this.txCol.orderBy("date","desc").limit(1000).onSnapshot(snap => {
-        S.txs = snap.docs.map(d => ({ id: d.id, ...d.data() })); S.ready = true; render();
+        S.txs = snap.docs.map(d => ({ id: d.id, ...d.data() })); migrate(); S.ready = true; render();
       }, () => { $("storeNote").textContent = "Se perdió la conexión con tus datos. Recarga la página."; });
       base.onSnapshot(s => { if (s.exists) { S.profile = { currency:"PEN", budgets:{}, ...s.data() }; render(); } });
     } else {
       this.mode = "local";
       try {
         const raw = localStorage.getItem("miscuentas");
-        if (raw) { const o = JSON.parse(raw); S.txs = o.txs||[]; S.profile = { currency:"PEN", budgets:{}, ...(o.profile||{}) }; }
+        if (raw) { const o = JSON.parse(raw); S.txs = o.txs||[]; S.profile = { currency:"PEN", budgets:{}, ...(o.profile||{}) }; if (migrate()) this.saveLocal(); }
       } catch(e) { this.mode = "memory"; }
       S.ready = true; render();
     }
@@ -272,22 +298,34 @@ const store = {
 };
 
 /* ---------- derived data ---------- */
+function migrate() {
+  // Lo registrado antes como gasto en la categoría "Ahorro" pasa a ser ahorro
+  let changed = false;
+  for (const t of S.txs) if (t.type==="gasto" && (t.cat||"").trim().toLowerCase()==="ahorro") { t.type="ahorro"; t.cat="Ahorro"; delete t.method; changed=true; }
+  const b = S.profile.budgets||{}; const key = Object.keys(b).find(k=>k.trim().toLowerCase()==="ahorro");
+  if (key) { if (!S.profile.savingsGoal) S.profile.savingsGoal = b[key]; delete b[key]; changed=true; }
+  if ((S.profile.customCats||[]).some(c=>c.trim().toLowerCase()==="ahorro")) { S.profile.customCats = S.profile.customCats.filter(c=>c.trim().toLowerCase()!=="ahorro"); changed=true; }
+  return changed;
+}
+const savOf = key => S.txs.reduce((a,t)=> a + (t.type==="ahorro" && (t.date||"").startsWith(key) ? t.amount : 0), 0);
 function monthData() {
   const key = ym(S.month);
   const list = S.txs.filter(t => (t.date||"").startsWith(key)).sort((a,b)=> (b.date+(b.createdAt||"")).localeCompare(a.date+(a.createdAt||"")));
-  let inc=0, exp=0, card=0, cardN=0; const byCat = {};
+  let inc=0, exp=0, sav=0, card=0, cardN=0; const byCat = {};
   for (const t of list) {
     if (t.type==="ingreso") inc += t.amount;
+    else if (t.type==="ahorro") sav += t.amount;
     else { exp += t.amount; byCat[t.cat] = (byCat[t.cat]||0) + t.amount; if (t.method==="tarjeta") { card += t.amount; cardN++; } }
   }
-  return { list, inc, exp, byCat, card, cardN };
+  return { list, inc, exp, sav, byCat, card, cardN };
 }
 
 /* ---------- rendering ---------- */
 function renderHero(m) {
   const ml = S.month.toLocaleDateString("es-PE",{month:"long",year:"numeric"}).replace(/ de /i," ");
   $("monthLbl").textContent = ml.charAt(0).toUpperCase()+ml.slice(1);
-  const bal = m.inc - m.exp;
+  const bal = m.inc - m.exp - m.sav;
+  $("savTile").hidden = !(m.sav>0); $("savTot").textContent = fmt(m.sav);
   $("balance").textContent = fmt(bal);
   $("incTot").textContent = fmt(m.inc);
   $("expTot").textContent = fmt(m.exp);
@@ -296,8 +334,8 @@ function renderHero(m) {
   $("meter").style.background = bal<0 ? "var(--out)" : "var(--in)";
   $("meterTxt").textContent = !m.list.length ? "Aún no hay movimientos este mes."
     : m.inc===0 ? "Registra tus ingresos para ver qué parte te queda."
-    : bal>=0 ? `Te queda el ${Math.round(pct)}% de lo que ingresó este mes.`
-    : `Gastaste ${fmt(-bal)} más de lo que ingresó.`;
+    : bal>=0 ? `Te queda el ${Math.round(pct)}% de lo que ingresó este mes${m.sav>0?", ya separado tu ahorro":""}.`
+    : `Te pasaste ${fmt(-bal)} de lo que ingresó este mes.`;
 }
 
 function catRows(m, limit) {
@@ -322,8 +360,14 @@ function txList(list) {
     if (t.date!==day) {
       day = t.date;
       const d = new Date(day+"T12:00:00");
-      const tot = list.filter(x=>x.date===day).reduce((s,x)=>s+(x.type==="ingreso"?x.amount:-x.amount),0);
-      html += `<div class="day"><span>${d.toLocaleDateString("es-PE",{weekday:"short",day:"numeric",month:"short"})}</span><span>${fmt(tot)}</span></div>`;
+      const tot = list.filter(x=>x.date===day).reduce((s,x)=>s+(x.type==="ingreso"?x.amount:x.type==="ahorro"?0:-x.amount),0);
+      html += `<div class="day"><span>${d.toLocaleDateString("es-PE",{weekday:"short",day:"numeric",month:"short"})}</span><span>${list.some(x=>x.date===day&&x.type!=="ahorro")?fmt(tot):""}</span></div>`;
+    }
+    if (t.type==="ahorro") {
+      html += `<div class="tx"><div class="ico savico">AH</div>
+      <div class="nm"><b>${esc(t.note||"Ahorro del mes")}</b><span>Ahorro</span></div>
+      <div class="amt"><span class="sav">${fmt(t.amount)}</span><button class="del" data-del="${esc(t.id)}">Eliminar</button></div></div>`;
+      continue;
     }
     const pos = t.type==="ingreso";
     html += `<div class="tx"><div class="ico">${abbr(t.cat)}</div>
@@ -364,6 +408,28 @@ function donut(m) {
     <div class="legend">${legend}</div></div>`;
 }
 
+function savingsPanel(m) {
+  const goal = +S.profile.savingsGoal || 0;
+  const total = S.txs.reduce((a,t)=>a+(t.type==="ahorro"?t.amount:0),0);
+  const months = [];
+  for (let i=5;i>=0;i--) { const d = new Date(S.month.getFullYear(), S.month.getMonth()-i, 1); months.push({ d, v: savOf(ym(d)) }); }
+  const max = Math.max(goal, ...months.map(x=>x.v), 1);
+  const p = goal ? Math.min(100, m.sav/goal*100) : (m.sav>0?100:0);
+  const msg = !goal ? `<span>Define tu meta mensual en Presupuestos.</span>`
+    : m.sav>=goal ? `<span>${fmt(m.sav)} de ${fmt(goal)}</span><span class="chip ok">¡Meta cumplida!</span>`
+    : m.sav>0 ? `<span>${fmt(m.sav)} de ${fmt(goal)}</span><span>Faltan ${fmt(goal-m.sav)}</span>`
+    : `<span>Meta: ${fmt(goal)}</span><span>Aún no registras tu ahorro</span>`;
+  const cols = months.map((x,i)=>`<div class="mcol ${i===5?"cur":""}"><span class="v">${x.v?fmt0(x.v):""}</span><div class="b" style="height:${Math.max(x.v/max*100,2)}%"></div><span class="m">${x.d.toLocaleDateString("es-PE",{month:"short"}).replace(".","")}</span></div>`).join("");
+  return `<div class="panel savp">
+    <div class="savtop"><div><small>Ahorro de ${S.month.toLocaleDateString("es-PE",{month:"long"})}</small><div class="big">${fmt(m.sav)}</div></div>
+      <div class="acc"><small>Total ahorrado</small><b>${fmt(total)}</b></div></div>
+    <div class="sbar"><i style="width:${p}%"></i></div>
+    <div class="savmsg">${msg}</div>
+    <div class="months" aria-label="Ahorro de los últimos 6 meses">${cols}</div>
+    ${m.sav>0?"":`<button class="btn" data-act="addsav">Registrar ahorro del mes</button>`}
+  </div>`;
+}
+
 function render() {
   const m = monthData();
   renderHero(m);
@@ -376,17 +442,22 @@ function render() {
     v.innerHTML = cardBox + `
       <div class="sec" ${m.cardN?'style="margin-top:18px"':""}><div class="sec-h"><h2>En qué gastas</h2><button class="link" data-go="pres">Presupuestos</button></div>
         <div class="panel">${catRows(m,5)}</div></div>
+      <div class="sec" style="margin-top:18px"><div class="sec-h"><h2>Tu ahorro</h2></div>${savingsPanel(m)}</div>
       <div class="sec" style="margin-top:18px"><div class="sec-h"><h2>Últimos movimientos</h2>${m.list.length>5?'<button class="link" data-go="movs">Ver todos</button>':""}</div>
         <div class="panel">${txList(m.list.slice(0,5))}</div></div>`;
   } else if (S.tab==="movs") {
     const f = S.filter;
     const list = m.list.filter(t => f==="todos" || (f==="tarjeta" ? t.method==="tarjeta" : t.type===f));
     v.innerHTML = `<div class="sec"><div class="sec-h"><h2>Movimientos</h2><span class="note">${list.length} en el mes${f==="tarjeta"&&list.length?" · "+fmt(m.card):""}</span></div>
-      <div class="filters">${[["todos","Todos"],["gasto","Gastos"],["ingreso","Ingresos"],["tarjeta","Tarjeta"]].map(([k,l])=>`<button data-filter="${k}" aria-pressed="${f===k}">${l}</button>`).join("")}</div>
+      <div class="filters">${[["todos","Todos"],["gasto","Gastos"],["ingreso","Ingresos"],["ahorro","Ahorros"],["tarjeta","Tarjeta"]].map(([k,l])=>`<button data-filter="${k}" aria-pressed="${f===k}">${l}</button>`).join("")}</div>
       <div class="panel">${txList(list)}</div></div>`;
   } else if (S.tab==="pres") {
     v.innerHTML = `<div class="sec"><div class="sec-h"><h2>¿En qué se va tu dinero?</h2></div>
       <div class="panel">${donut(m)}</div></div>
+      <div class="sec" style="margin-top:18px"><div class="sec-h"><h2>Meta de ahorro mensual</h2></div>
+      <div class="panel goalrow"><div class="ico" style="background:var(--save-soft);color:var(--save)">AH</div>
+        <label for="goalIn">¿Cuánto quieres ahorrar cada mes?<br><span class="note" style="padding:0;font-weight:400">Este mes: ${fmt(m.sav)}</span></label>
+        <input id="goalIn" inputmode="decimal" placeholder="Sin meta" value="${S.profile.savingsGoal||""}"></div></div>
       <div class="sec" style="margin-top:18px"><div class="sec-h"><h2>Presupuesto mensual</h2></div>
       <p class="note">Pon un límite mensual por categoría. Te avisamos cuando llegues al 85%.</p>
       <div class="panel">${budRows(m)}</div>
@@ -421,6 +492,7 @@ document.addEventListener("click", async e => {
   else if (b.dataset.go) { document.querySelector(`.tabs button[data-tab="${b.dataset.go}"]`).click(); }
   else if (b.dataset.filter) { S.filter=b.dataset.filter; render(); }
   else if (b.dataset.act==="add") openSheet();
+  else if (b.dataset.act==="addsav") { openSheet("ahorro"); if (S.profile.savingsGoal) $("fAmt").value = S.profile.savingsGoal; }
   else if (b.dataset.del) {
     if (!b.classList.contains("arm")) { b.classList.add("arm"); b.textContent="¿Eliminar?"; setTimeout(()=>{ if(b.isConnected){b.classList.remove("arm"); b.textContent="Eliminar";} },3000); return; }
     try { await store.remove(b.dataset.del); toast("Movimiento eliminado"); } catch(err){ toast("No se pudo eliminar. Intenta de nuevo."); }
@@ -449,7 +521,7 @@ document.addEventListener("click", async e => {
     try {
       const o = JSON.parse($("impTxt").value);
       if (!Array.isArray(o.txs)) throw 0;
-      S.txs = o.txs.filter(t=>t && t.amount>0 && t.date); S.profile = { currency:"PEN", budgets:{}, ...(o.profile||{}) };
+      S.txs = o.txs.filter(t=>t && t.amount>0 && t.date); S.profile = { currency:"PEN", budgets:{}, ...(o.profile||{}) }; migrate();
       store.saveLocal(); render(); toast("Respaldo restaurado");
     } catch(err) { toast("Ese texto no es un respaldo válido"); }
   }
@@ -463,7 +535,16 @@ $("prevM").onclick = () => { S.month = new Date(S.month.getFullYear(), S.month.g
 $("nextM").onclick = () => { S.month = new Date(S.month.getFullYear(), S.month.getMonth()+1, 1); render(); };
 
 let budTimer;
+let goalTimer;
 document.addEventListener("input", e => {
+  if (e.target.id==="goalIn") {
+    clearTimeout(goalTimer);
+    goalTimer = setTimeout(() => {
+      const n = parseFloat(e.target.value.replace(",","."));
+      const g = n>0 ? Math.round(n*100)/100 : 0;
+      if (g !== (+S.profile.savingsGoal||0)) store.setProfile({ savingsGoal: g }).then(()=>$("goalIn")?.focus());
+    }, 700);
+  }
   if (e.target.dataset.bud!==undefined) {
     clearTimeout(budTimer);
     budTimer = setTimeout(() => {
@@ -484,22 +565,25 @@ let curType = "gasto", curPay = "efectivo";
 function setPay(p) { curPay = p; $("pEfe").setAttribute("aria-pressed", p==="efectivo"); $("pTar").setAttribute("aria-pressed", p==="tarjeta"); }
 function setType(t) {
   curType = t;
-  $("tGasto").setAttribute("aria-pressed", t==="gasto"); $("tIngreso").setAttribute("aria-pressed", t==="ingreso");
+  $("tGasto").setAttribute("aria-pressed", t==="gasto"); $("tIngreso").setAttribute("aria-pressed", t==="ingreso"); $("tAhorro").setAttribute("aria-pressed", t==="ahorro");
+  $("catBox").hidden = t==="ahorro";
+  $("fNote").placeholder = t==="ahorro" ? "Ej. Ahorro de "+S.month.toLocaleDateString("es-PE",{month:"long"}) : "Ej. Menú del almuerzo";
   $("payBox").hidden = t!=="gasto";
-  $("fCat").innerHTML = (t==="gasto" ? expenseCats() : CATS.ingreso.map(x=>x[0])).map(c=>`<option>${esc(c)}</option>`).join("");
+  $("fCat").innerHTML = (t==="ingreso" ? CATS.ingreso.map(x=>x[0]) : expenseCats()).map(c=>`<option>${esc(c)}</option>`).join("");
 }
-function openSheet() {
-  setType("gasto"); setPay("efectivo"); $("fAmt").value=""; $("fNote").value=""; $("fErr").textContent="";
+function openSheet(type) {
+  setType(type==="ahorro"?"ahorro":"gasto"); setPay("efectivo"); $("fAmt").value=""; $("fNote").value=""; $("fErr").textContent="";
   const today = new Date(); const inMonth = ym(today)===ym(S.month);
   $("fDate").value = inMonth ? ymd(today) : ymd(S.month);
   $("scrim").hidden=false; setTimeout(()=>$("fAmt").focus(),50);
 }
 const closeSheet = () => { $("scrim").hidden=true; };
-$("fab").onclick = openSheet;
+$("fab").onclick = () => openSheet();
 $("cancel").onclick = closeSheet;
 $("scrim").addEventListener("click", e => { if (e.target.id==="scrim") closeSheet(); });
 $("tGasto").onclick = () => setType("gasto");
 $("tIngreso").onclick = () => setType("ingreso");
+$("tAhorro").onclick = () => setType("ahorro");
 $("pEfe").onclick = () => setPay("efectivo");
 $("pTar").onclick = () => setPay("tarjeta");
 $("txForm").addEventListener("submit", async e => {
@@ -507,13 +591,13 @@ $("txForm").addEventListener("submit", async e => {
   const amount = Math.round(parseFloat(($("fAmt").value||"").replace(/[^\d.,]/g,"").replace(",","."))*100)/100;
   if (!(amount>0)) { $("fErr").textContent="Escribe un monto mayor que cero."; $("fAmt").focus(); return; }
   if (!$("fDate").value) { $("fErr").textContent="Elige una fecha."; return; }
-  const tx = { type:curType, amount, cat:$("fCat").value, date:$("fDate").value, note:$("fNote").value.trim(), createdAt:new Date().toISOString() };
+  const tx = { type:curType, amount, cat: curType==="ahorro" ? "Ahorro" : $("fCat").value, date:$("fDate").value, note:$("fNote").value.trim(), createdAt:new Date().toISOString() };
   if (curType==="gasto") tx.method = curPay;
   $("save").disabled = true;
   try {
     await store.add(tx);
     const [y,mo] = tx.date.split("-").map(Number); S.month = new Date(y, mo-1, 1);
-    closeSheet(); render(); toast(curType==="ingreso"?"Ingreso guardado":curPay==="tarjeta"?"Gasto con tarjeta guardado":"Gasto guardado");
+    closeSheet(); render(); toast(curType==="ahorro"?"¡Ahorro registrado!":curType==="ingreso"?"Ingreso guardado":curPay==="tarjeta"?"Gasto con tarjeta guardado":"Gasto guardado");
   } catch(err) { $("fErr").textContent = err?.code==="quota_exceeded" ? "Ya no hay espacio para más movimientos. Elimina algunos antiguos." : "No se pudo guardar. Revisa tu conexión e intenta de nuevo."; }
   $("save").disabled = false;
 });
