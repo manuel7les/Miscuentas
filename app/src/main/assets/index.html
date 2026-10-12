@@ -103,6 +103,29 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .goalrow{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 14px}
 .goalrow input{width:120px;box-sizing:border-box}
 .goalrow .none{font-size:.9rem;color:var(--muted);font-weight:600}
+.hbars{padding:16px;display:flex;flex-direction:column;gap:12px}
+.hb{display:grid;grid-template-columns:96px minmax(0,1fr);gap:10px;align-items:center}
+.hb .l{font-size:.85rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hb .t{display:flex;align-items:center;gap:8px;min-width:0}
+.hb .t i{display:block;height:18px;border-radius:5px;min-width:3px}
+.hb .t span{font-size:.78rem;font-weight:700;white-space:nowrap;color:var(--muted)}
+.hb.top .l,.hb.top .t span{color:var(--ink)}
+.bchart{padding:16px;display:flex;flex-direction:column;gap:14px}
+.bc .h{display:flex;justify-content:space-between;gap:8px;font-size:.85rem;margin-bottom:6px}
+.bc .h b{font-weight:600}
+.bc .h span{color:var(--muted);white-space:nowrap}
+.bc .track{position:relative;height:14px;border-radius:7px;background:var(--soft);overflow:hidden}
+.bc .track i{position:absolute;left:0;top:0;bottom:0;border-radius:7px;background:var(--in)}
+.bc .track i.near{background:var(--warn)} .bc .track i.over{background:var(--out)}
+.bc .pct{font-size:.74rem;font-weight:700;margin-top:4px;color:var(--muted)}
+.bc .pct.near{color:var(--warn)} .bc .pct.over{color:var(--out)}
+.legend2{display:flex;gap:14px;flex-wrap:wrap;font-size:.74rem;color:var(--muted)}
+.legend2 span{display:flex;align-items:center;gap:5px}
+.legend2 i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.actions button{border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:12px 6px;font-weight:700;font-size:.92rem;display:flex;flex-direction:column;align-items:center;gap:2px}
+.actions button b{font-family:var(--display);font-size:1.4rem;line-height:1}
+.actions .g{color:var(--out)} .actions .i{color:var(--in)} .actions .a{color:var(--save)}
 .del{border:0;background:none;color:var(--muted);font-size:.74rem;padding:2px 0}
 .del.arm{color:var(--out);font-weight:700}
 
@@ -200,7 +223,7 @@ input,select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:
   <p class="note" id="storeNote"></p>
 </div>
 
-<button class="fab" id="fab" aria-label="Agregar movimiento">+</button>
+<button class="fab" id="fab" aria-label="Agregar movimiento" hidden>+</button>
 
 <div class="tabs"><nav>
   <button data-tab="inicio" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Inicio</button>
@@ -420,6 +443,23 @@ function donut(m) {
     <div class="legend">${legend}</div></div>`;
 }
 
+function expenseBars(m) {
+  const rows = Object.entries(m.byCat).sort((a,b)=>b[1]-a[1]);
+  if (!rows.length) return `<div class="empty"><h3>Sin gastos este mes</h3><span>Registra tus gastos en la pestaña Movimientos y aquí verás cuál categoría pesa más.</span></div>`;
+  const max = rows[0][1];
+  return `<div class="hbars" aria-label="Gastos por categoría">${rows.map(([c,v],i)=>`<div class="hb ${i===0?"top":""}"><span class="l">${esc(c)}</span>
+    <div class="t"><i style="width:${Math.max(v/max*72,1)}%;background:${catColor(c)}"></i><span>${fmt0(v)} · ${Math.round(v/(m.exp||1)*100)}%</span></div></div>`).join("")}</div>`;
+}
+function budgetChart(m) {
+  const cats = expenseCats().filter(c => S.profile.budgets?.[c]);
+  if (!cats.length) return `<div class="empty"><h3>Sin presupuestos</h3><span>Define límites por categoría para ver aquí cuánto llevas usado.</span><button class="btn ghost" data-go="pres">Ir a Presupuestos</button></div>`;
+  const rows = cats.map(c => { const b=+S.profile.budgets[c], v=m.byCat[c]||0; return {c,b,v,p:v/b*100}; }).sort((a,b)=>b.p-a.p);
+  return `<div class="bchart">${rows.map(r=>{ const st = r.p>100?"over":r.p>=85?"near":"";
+    return `<div class="bc"><div class="h"><b>${esc(r.c)}</b><span>${fmt0(r.v)} de ${fmt0(r.b)}</span></div>
+      <div class="track"><i class="${st}" style="width:${Math.min(r.p,100)}%"></i></div>
+      <div class="pct ${st}">${Math.round(r.p)}% usado${st==="over"?` · te pasaste ${fmt0(r.v-r.b)}`:st==="near"?(r.p>=100?" · límite alcanzado":" · casi al límite"):` · quedan ${fmt0(r.b-r.v)}`}</div></div>`;}).join("")}
+    <div class="legend2"><span><i style="background:var(--in)"></i>Bien</span><span><i style="background:var(--warn)"></i>85% o más</span><span><i style="background:var(--out)"></i>Excedido</span></div></div>`;
+}
 function savingsPanel(m) {
   const goal = +S.profile.savingsGoal || 0;
   const total = S.txs.reduce((a,t)=>a+(t.type==="ahorro"?t.amount:0),0);
@@ -438,7 +478,7 @@ function savingsPanel(m) {
     <div class="sbar"><i style="width:${p}%"></i></div>
     <div class="savmsg">${msg}</div>
     <div class="months" aria-label="Ahorro de los últimos 6 meses">${cols}</div>
-    ${m.sav>0?"":`<button class="btn" data-act="addsav">Registrar ahorro del mes</button>`}
+    ${m.sav>0?"":`<p class="note" style="margin:0;padding:0">Registra tu ahorro en la pestaña Movimientos con el botón + Ahorro.</p>`}
   </div>`;
 }
 
@@ -448,19 +488,20 @@ function render() {
   const v = $("view");
   if (!S.ready) { v.innerHTML = `<div class="panel"><div class="empty"><span>Cargando tus movimientos…</span></div></div>`; return; }
   if (S.tab==="inicio") {
-    const cardBox = m.cardN ? `<div class="sec"><div class="panel cardsum"><div class="ci" aria-hidden="true"></div>
-        <div><b>Cargado a tu tarjeta</b><span>${m.cardN} ${m.cardN===1?"compra":"compras"} este mes</span></div>
-        <div class="amt">${fmt(m.card)}</div></div></div>` : "";
-    v.innerHTML = cardBox + `
-      <div class="sec" ${m.cardN?'style="margin-top:18px"':""}><div class="sec-h"><h2>En qué gastas</h2><button class="link" data-go="pres">Presupuestos</button></div>
-        <div class="panel">${catRows(m,5)}</div></div>
-      <div class="sec" style="margin-top:18px"><div class="sec-h"><h2>Tu ahorro</h2></div>${savingsPanel(m)}</div>
-      <div class="sec" style="margin-top:18px"><div class="sec-h"><h2>Últimos movimientos</h2>${m.list.length>5?'<button class="link" data-go="movs">Ver todos</button>':""}</div>
-        <div class="panel">${txList(m.list.slice(0,5))}</div></div>`;
+    v.innerHTML = `
+      <div class="sec"><div class="sec-h"><h2>Gastos por categoría</h2></div><div class="panel">${expenseBars(m)}</div></div>
+      <div class="sec" style="margin-top:18px"><div class="sec-h"><h2>Presupuesto del mes</h2><button class="link" data-go="pres">Editar</button></div><div class="panel">${budgetChart(m)}</div></div>
+      <div class="sec" style="margin-top:18px"><div class="sec-h"><h2>Tu ahorro</h2></div>${savingsPanel(m)}</div>`;
   } else if (S.tab==="movs") {
     const f = S.filter;
     const list = m.list.filter(t => f==="todos" || (f==="tarjeta" ? t.method==="tarjeta" : t.type===f));
-    v.innerHTML = `<div class="sec"><div class="sec-h"><h2>Movimientos</h2><span class="note">${list.length} en el mes${f==="tarjeta"&&list.length?" · "+fmt(m.card):""}</span></div>
+    const cardBox = m.cardN ? `<div class="panel cardsum"><div class="ci" aria-hidden="true"></div>
+        <div><b>Cargado a tu tarjeta</b><span>${m.cardN} ${m.cardN===1?"compra":"compras"} este mes</span></div>
+        <div class="amt">${fmt(m.card)}</div></div>` : "";
+    v.innerHTML = `<div class="sec"><div class="sec-h"><h2>Registrar</h2></div>
+      <div class="actions"><button class="g" data-new="gasto"><b>−</b>Gasto</button><button class="i" data-new="ingreso"><b>+</b>Ingreso</button><button class="a" data-new="ahorro"><b>↑</b>Ahorro</button></div>
+      ${cardBox}</div>
+      <div class="sec" style="margin-top:18px"><div class="sec-h"><h2>Movimientos</h2><span class="note">${list.length} en el mes${f==="tarjeta"&&list.length?" · "+fmt(m.card):""}</span></div>
       <div class="filters">${[["todos","Todos"],["gasto","Gastos"],["ingreso","Ingresos"],["ahorro","Ahorros"],["tarjeta","Tarjeta"]].map(([k,l])=>`<button data-filter="${k}" aria-pressed="${f===k}">${l}</button>`).join("")}</div>
       <div class="panel">${txList(list)}</div></div>`;
   } else if (S.tab==="pres") {
@@ -511,6 +552,7 @@ document.addEventListener("click", async e => {
   else if (b.dataset.go) { document.querySelector(`.tabs button[data-tab="${b.dataset.go}"]`).click(); }
   else if (b.dataset.filter) { S.filter=b.dataset.filter; render(); }
   else if (b.dataset.act==="add") openSheet();
+  else if (b.dataset.new) { openSheet(b.dataset.new); if (b.dataset.new==="ahorro" && S.profile.savingsGoal && !monthData().sav) $("fAmt").value = S.profile.savingsGoal; }
   else if (b.dataset.act==="addsav") { openSheet("ahorro"); if (S.profile.savingsGoal) $("fAmt").value = S.profile.savingsGoal; }
   else if (b.dataset.del) {
     if (!b.classList.contains("arm")) { b.classList.add("arm"); b.textContent="¿Eliminar?"; setTimeout(()=>{ if(b.isConnected){b.classList.remove("arm"); b.textContent="Eliminar";} },3000); return; }
@@ -595,13 +637,14 @@ function setType(t) {
   $("fCat").innerHTML = (t==="ingreso" ? CATS.ingreso.map(x=>x[0]) : expenseCats()).map(c=>`<option>${esc(c)}</option>`).join("");
 }
 function openSheet(type) {
-  setType(type==="ahorro"?"ahorro":"gasto"); setPay("efectivo"); $("fAmt").value=""; $("fNote").value=""; $("fErr").textContent="";
+  setType(["ahorro","ingreso"].includes(type)?type:"gasto"); setPay("efectivo"); $("fAmt").value=""; $("fNote").value=""; $("fErr").textContent="";
   const today = new Date(); const inMonth = ym(today)===ym(S.month);
   $("fDate").value = inMonth ? ymd(today) : ymd(S.month);
   $("scrim").hidden=false; setTimeout(()=>$("fAmt").focus(),50);
 }
 const closeSheet = () => { $("scrim").hidden=true; };
 $("fab").onclick = () => openSheet();
+$("fab").hidden = true;
 $("cancel").onclick = closeSheet;
 $("scrim").addEventListener("click", e => { if (e.target.id==="scrim") closeSheet(); });
 $("tGasto").onclick = () => setType("gasto");
