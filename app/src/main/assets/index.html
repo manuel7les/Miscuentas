@@ -128,11 +128,17 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .legend span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .legend b{font-weight:700}
 .legend div.top span,.legend div.top b{color:var(--ink);font-weight:800}
-.bud{display:grid;grid-template-columns:36px 1fr 120px;gap:12px;align-items:center;padding:10px 14px;border-top:1px solid var(--line)}
+.bud{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 14px;border-top:1px solid var(--line)}
 .bud:first-child{border-top:0}
 .bud label{font-weight:600}
 .bud input{width:100%;box-sizing:border-box}
-.budr{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.budr{display:flex;flex-direction:column;align-items:flex-end;gap:6px;min-width:0}
+.bud .budr input{width:120px;box-sizing:border-box}
+.budr .err{min-height:0;font-size:.74rem;text-align:right}
+.budamt{font-family:var(--display);font-weight:800;font-size:1.05rem;white-space:nowrap}
+.budbtns{display:flex;gap:10px;align-items:center}
+.mini{border:0;background:var(--accent);color:var(--accent-ink);font-weight:600;font-size:.78rem;padding:6px 12px;border-radius:9px}
+.mini.ghost{background:var(--soft);color:var(--ink)}
 .addbud{padding:14px;display:flex;flex-direction:column;gap:12px}
 .addbud select,.addbud input{width:100%;box-sizing:border-box}
 input,select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0}
@@ -386,8 +392,13 @@ function budRows(m) {
   return cats.map((c,i) => {
     const id = "b-"+i; const spent = m.byCat[c]||0;
     return `<div class="bud"><div class="ico" style="background:${catColor(c)};color:#fff">${esc(abbr(c))}</div>
-      <label for="${id}">${esc(c)}<br><span class="note" style="padding:0;font-weight:400">Gastado: ${fmt(spent)}</span></label>
-      <div class="budr"><input id="${id}" data-bud="${esc(c)}" inputmode="decimal" value="${S.profile.budgets[c]}"><button class="del" data-delbud="${esc(c)}">Eliminar</button></div></div>`;
+      <label ${S.editBud===c?'for="editBudIn"':""}>${esc(c)}<br><span class="note" style="padding:0;font-weight:400">Gastado: ${fmt(spent)}</span></label>
+      ${S.editBud===c
+        ? `<div class="budr"><input id="editBudIn" inputmode="decimal" value="${S.profile.budgets[c]}" aria-label="Nuevo límite para ${esc(c)}">
+            <div class="budbtns"><button class="del" data-cancelbud="1">Cancelar</button><button class="mini" data-savebud="${esc(c)}">Guardar</button></div>
+            <span class="err" id="editBudErr"></span></div>`
+        : `<div class="budr"><b class="budamt">${fmt(S.profile.budgets[c])}</b>
+            <div class="budbtns"><button class="mini ghost" data-editbud="${esc(c)}">Editar</button><button class="del" data-delbud="${esc(c)}">Eliminar</button></div></div>`}</div>`;
   }).join("");
 }
 const CAT_COLORS = {"Comida":"#E4572E","Transporte":"#3B5BDB","Vivienda":"#8E44AD","Servicios":"#1597A8","Salud":"#E0457B","Educación":"#E6A100","Ocio":"#20A866","Compras":"#FF8C42","Deudas":"#8B5A2B","Otros":"#8A93AD"};
@@ -497,6 +508,16 @@ document.addEventListener("click", async e => {
     if (!b.classList.contains("arm")) { b.classList.add("arm"); b.textContent="¿Eliminar?"; setTimeout(()=>{ if(b.isConnected){b.classList.remove("arm"); b.textContent="Eliminar";} },3000); return; }
     try { await store.remove(b.dataset.del); toast("Movimiento eliminado"); } catch(err){ toast("No se pudo eliminar. Intenta de nuevo."); }
   }
+  else if (b.dataset.editbud) { S.editBud = b.dataset.editbud; render(); const i=$("editBudIn"); if(i){ i.focus(); i.select(); } }
+  else if (b.dataset.cancelbud) { S.editBud = null; render(); }
+  else if (b.dataset.savebud) {
+    const c = b.dataset.savebud;
+    const n = Math.round(parseFloat(($("editBudIn").value||"").replace(",","."))*100)/100;
+    if (!(n>0)) { $("editBudErr").textContent="Escribe un monto mayor que cero"; $("editBudIn").focus(); return; }
+    S.editBud = null;
+    await store.setProfile({ budgets: { ...(S.profile.budgets||{}), [c]: n } });
+    toast("Presupuesto actualizado");
+  }
   else if (b.dataset.delbud) {
     if (!b.classList.contains("arm")) { b.classList.add("arm"); b.textContent="¿Eliminar?"; setTimeout(()=>{ if(b.isConnected){b.classList.remove("arm"); b.textContent="Eliminar";} },3000); return; }
     const c = b.dataset.delbud; const budgets = { ...(S.profile.budgets||{}) }; delete budgets[c];
@@ -534,7 +555,6 @@ document.addEventListener("click", async e => {
 $("prevM").onclick = () => { S.month = new Date(S.month.getFullYear(), S.month.getMonth()-1, 1); render(); };
 $("nextM").onclick = () => { S.month = new Date(S.month.getFullYear(), S.month.getMonth()+1, 1); render(); };
 
-let budTimer;
 let goalTimer;
 document.addEventListener("input", e => {
   if (e.target.id==="goalIn") {
@@ -545,17 +565,11 @@ document.addEventListener("input", e => {
       if (g !== (+S.profile.savingsGoal||0)) store.setProfile({ savingsGoal: g }).then(()=>$("goalIn")?.focus());
     }, 700);
   }
-  if (e.target.dataset.bud!==undefined) {
-    clearTimeout(budTimer);
-    budTimer = setTimeout(() => {
-      const budgets = { ...(S.profile.budgets||{}) };
-      let changed = false;
-      document.querySelectorAll("[data-bud]").forEach(i => { const n=parseFloat(i.value.replace(",",".")); if(n>0 && budgets[i.dataset.bud]!==n){ budgets[i.dataset.bud]=n; changed=true; } });
-      if (!changed) return;
-      const focusId = document.activeElement?.id;
-      store.setProfile({ budgets }).then(()=>{ if(focusId){ const el=$(focusId); el?.focus(); } });
-    }, 700);
-  }
+
+});
+document.addEventListener("keydown", e => {
+  if (e.target.id==="editBudIn" && e.key==="Enter") { e.preventDefault(); document.querySelector("[data-savebud]")?.click(); }
+  if (e.target.id==="editBudIn" && e.key==="Escape") { S.editBud = null; render(); }
 });
 document.addEventListener("change", e => {
   if (e.target.id==="nbCat") { $("nbNameBox").hidden = e.target.value!=="__new"; if (e.target.value==="__new") $("nbName").focus(); } if (e.target.id==="cur") store.setProfile({ currency:e.target.value }); });
