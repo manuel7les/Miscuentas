@@ -72,6 +72,13 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .tx .nm span{display:block;font-size:.8rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tx .amt{font-weight:600;text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:2px}
 .pos{color:var(--in)} .neg{color:var(--out)}
+.card-tag{display:inline-block;font-style:normal;font-size:.66rem;font-weight:700;letter-spacing:.03em;padding:1px 6px;border-radius:6px;margin-left:6px;vertical-align:1px;background:color-mix(in srgb,var(--accent) 15%,transparent);color:var(--accent)}
+.cardsum{display:grid;grid-template-columns:40px 1fr auto;gap:12px;align-items:center;padding:14px}
+.cardsum .ci{width:40px;height:28px;border-radius:6px;background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent) 55%,var(--ink)));position:relative}
+.cardsum .ci::after{content:"";position:absolute;left:6px;top:8px;width:9px;height:7px;border-radius:2px;background:rgba(255,255,255,.75)}
+.cardsum b{display:block;font-weight:600}
+.cardsum span{font-size:.8rem;color:var(--muted)}
+.cardsum .amt{font-family:var(--display);font-weight:800;font-size:1.15rem}
 .del{border:0;background:none;color:var(--muted);font-size:.74rem;padding:2px 0}
 .del.arm{color:var(--out);font-weight:700}
 
@@ -182,6 +189,11 @@ input,select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:
       <div class="field"><label for="fCat">Categoría</label><select id="fCat"></select></div>
       <div class="field"><label for="fDate">Fecha</label><input type="date" id="fDate"></div>
     </div>
+    <div class="field" id="payBox"><label>Pagado con</label>
+      <div class="seg" role="group" aria-label="Pagado con">
+        <button type="button" id="pEfe" aria-pressed="true">Efectivo / débito</button>
+        <button type="button" id="pTar" aria-pressed="false">Tarjeta de crédito</button>
+      </div></div>
     <div class="field"><label for="fNote">Descripción (opcional)</label><input id="fNote" maxlength="80" placeholder="Ej. Menú del almuerzo"></div>
     <div class="err" id="fErr"></div>
     <div class="row2">
@@ -263,12 +275,12 @@ const store = {
 function monthData() {
   const key = ym(S.month);
   const list = S.txs.filter(t => (t.date||"").startsWith(key)).sort((a,b)=> (b.date+(b.createdAt||"")).localeCompare(a.date+(a.createdAt||"")));
-  let inc=0, exp=0; const byCat = {};
+  let inc=0, exp=0, card=0, cardN=0; const byCat = {};
   for (const t of list) {
     if (t.type==="ingreso") inc += t.amount;
-    else { exp += t.amount; byCat[t.cat] = (byCat[t.cat]||0) + t.amount; }
+    else { exp += t.amount; byCat[t.cat] = (byCat[t.cat]||0) + t.amount; if (t.method==="tarjeta") { card += t.amount; cardN++; } }
   }
-  return { list, inc, exp, byCat };
+  return { list, inc, exp, byCat, card, cardN };
 }
 
 /* ---------- rendering ---------- */
@@ -315,7 +327,7 @@ function txList(list) {
     }
     const pos = t.type==="ingreso";
     html += `<div class="tx"><div class="ico">${abbr(t.cat)}</div>
-      <div class="nm"><b>${esc(t.note||t.cat)}</b><span>${esc(t.note?t.cat:(pos?"Ingreso":"Gasto"))}</span></div>
+      <div class="nm"><b>${esc(t.note||t.cat)}</b><span>${esc(t.note?t.cat:(pos?"Ingreso":"Gasto"))}${t.method==="tarjeta"?'<i class="card-tag">TARJETA</i>':""}</span></div>
       <div class="amt"><span class="${pos?"pos":"neg"}">${pos?"+":"−"}${fmt(t.amount)}</span><button class="del" data-del="${esc(t.id)}">Eliminar</button></div></div>`;
   }
   return html;
@@ -358,16 +370,19 @@ function render() {
   const v = $("view");
   if (!S.ready) { v.innerHTML = `<div class="panel"><div class="empty"><span>Cargando tus movimientos…</span></div></div>`; return; }
   if (S.tab==="inicio") {
-    v.innerHTML = `
-      <div class="sec"><div class="sec-h"><h2>En qué gastas</h2><button class="link" data-go="pres">Presupuestos</button></div>
+    const cardBox = m.cardN ? `<div class="sec"><div class="panel cardsum"><div class="ci" aria-hidden="true"></div>
+        <div><b>Cargado a tu tarjeta</b><span>${m.cardN} ${m.cardN===1?"compra":"compras"} este mes</span></div>
+        <div class="amt">${fmt(m.card)}</div></div></div>` : "";
+    v.innerHTML = cardBox + `
+      <div class="sec" ${m.cardN?'style="margin-top:18px"':""}><div class="sec-h"><h2>En qué gastas</h2><button class="link" data-go="pres">Presupuestos</button></div>
         <div class="panel">${catRows(m,5)}</div></div>
       <div class="sec" style="margin-top:18px"><div class="sec-h"><h2>Últimos movimientos</h2>${m.list.length>5?'<button class="link" data-go="movs">Ver todos</button>':""}</div>
         <div class="panel">${txList(m.list.slice(0,5))}</div></div>`;
   } else if (S.tab==="movs") {
     const f = S.filter;
-    const list = m.list.filter(t => f==="todos" || t.type===f);
-    v.innerHTML = `<div class="sec"><div class="sec-h"><h2>Movimientos</h2><span class="note">${list.length} en el mes</span></div>
-      <div class="filters">${[["todos","Todos"],["gasto","Gastos"],["ingreso","Ingresos"]].map(([k,l])=>`<button data-filter="${k}" aria-pressed="${f===k}">${l}</button>`).join("")}</div>
+    const list = m.list.filter(t => f==="todos" || (f==="tarjeta" ? t.method==="tarjeta" : t.type===f));
+    v.innerHTML = `<div class="sec"><div class="sec-h"><h2>Movimientos</h2><span class="note">${list.length} en el mes${f==="tarjeta"&&list.length?" · "+fmt(m.card):""}</span></div>
+      <div class="filters">${[["todos","Todos"],["gasto","Gastos"],["ingreso","Ingresos"],["tarjeta","Tarjeta"]].map(([k,l])=>`<button data-filter="${k}" aria-pressed="${f===k}">${l}</button>`).join("")}</div>
       <div class="panel">${txList(list)}</div></div>`;
   } else if (S.tab==="pres") {
     v.innerHTML = `<div class="sec"><div class="sec-h"><h2>¿En qué se va tu dinero?</h2></div>
@@ -465,14 +480,16 @@ document.addEventListener("change", e => {
   if (e.target.id==="nbCat") { $("nbNameBox").hidden = e.target.value!=="__new"; if (e.target.value==="__new") $("nbName").focus(); } if (e.target.id==="cur") store.setProfile({ currency:e.target.value }); });
 
 /* ---------- add sheet ---------- */
-let curType = "gasto";
+let curType = "gasto", curPay = "efectivo";
+function setPay(p) { curPay = p; $("pEfe").setAttribute("aria-pressed", p==="efectivo"); $("pTar").setAttribute("aria-pressed", p==="tarjeta"); }
 function setType(t) {
   curType = t;
   $("tGasto").setAttribute("aria-pressed", t==="gasto"); $("tIngreso").setAttribute("aria-pressed", t==="ingreso");
+  $("payBox").hidden = t!=="gasto";
   $("fCat").innerHTML = (t==="gasto" ? expenseCats() : CATS.ingreso.map(x=>x[0])).map(c=>`<option>${esc(c)}</option>`).join("");
 }
 function openSheet() {
-  setType("gasto"); $("fAmt").value=""; $("fNote").value=""; $("fErr").textContent="";
+  setType("gasto"); setPay("efectivo"); $("fAmt").value=""; $("fNote").value=""; $("fErr").textContent="";
   const today = new Date(); const inMonth = ym(today)===ym(S.month);
   $("fDate").value = inMonth ? ymd(today) : ymd(S.month);
   $("scrim").hidden=false; setTimeout(()=>$("fAmt").focus(),50);
@@ -483,17 +500,20 @@ $("cancel").onclick = closeSheet;
 $("scrim").addEventListener("click", e => { if (e.target.id==="scrim") closeSheet(); });
 $("tGasto").onclick = () => setType("gasto");
 $("tIngreso").onclick = () => setType("ingreso");
+$("pEfe").onclick = () => setPay("efectivo");
+$("pTar").onclick = () => setPay("tarjeta");
 $("txForm").addEventListener("submit", async e => {
   e.preventDefault();
   const amount = Math.round(parseFloat(($("fAmt").value||"").replace(/[^\d.,]/g,"").replace(",","."))*100)/100;
   if (!(amount>0)) { $("fErr").textContent="Escribe un monto mayor que cero."; $("fAmt").focus(); return; }
   if (!$("fDate").value) { $("fErr").textContent="Elige una fecha."; return; }
   const tx = { type:curType, amount, cat:$("fCat").value, date:$("fDate").value, note:$("fNote").value.trim(), createdAt:new Date().toISOString() };
+  if (curType==="gasto") tx.method = curPay;
   $("save").disabled = true;
   try {
     await store.add(tx);
     const [y,mo] = tx.date.split("-").map(Number); S.month = new Date(y, mo-1, 1);
-    closeSheet(); render(); toast(curType==="gasto"?"Gasto guardado":"Ingreso guardado");
+    closeSheet(); render(); toast(curType==="ingreso"?"Ingreso guardado":curPay==="tarjeta"?"Gasto con tarjeta guardado":"Gasto guardado");
   } catch(err) { $("fErr").textContent = err?.code==="quota_exceeded" ? "Ya no hay espacio para más movimientos. Elimina algunos antiguos." : "No se pudo guardar. Revisa tu conexión e intenta de nuevo."; }
   $("save").disabled = false;
 });
