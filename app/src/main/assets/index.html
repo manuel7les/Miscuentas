@@ -100,8 +100,9 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .mcol.cur .v{color:var(--save)}
 .mcol .m{font-size:.72rem;color:var(--muted);text-transform:capitalize}
 .mcol.cur .m{color:var(--ink);font-weight:700}
-.goalrow{display:grid;grid-template-columns:36px 1fr 120px;gap:12px;align-items:center;padding:12px 14px}
-.goalrow input{width:100%;box-sizing:border-box}
+.goalrow{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 14px}
+.goalrow input{width:120px;box-sizing:border-box}
+.goalrow .none{font-size:.9rem;color:var(--muted);font-weight:600}
 .del{border:0;background:none;color:var(--muted);font-size:.74rem;padding:2px 0}
 .del.arm{color:var(--out);font-weight:700}
 
@@ -467,8 +468,15 @@ function render() {
       <div class="panel">${donut(m)}</div></div>
       <div class="sec" style="margin-top:18px"><div class="sec-h"><h2>Meta de ahorro mensual</h2></div>
       <div class="panel goalrow"><div class="ico" style="background:var(--save-soft);color:var(--save)">AH</div>
-        <label for="goalIn">¿Cuánto quieres ahorrar cada mes?<br><span class="note" style="padding:0;font-weight:400">Este mes: ${fmt(m.sav)}</span></label>
-        <input id="goalIn" inputmode="decimal" placeholder="Sin meta" value="${S.profile.savingsGoal||""}"></div></div>
+        <label ${S.editGoal?'for="goalIn"':""}>¿Cuánto quieres ahorrar cada mes?<br><span class="note" style="padding:0;font-weight:400">Este mes: ${fmt(m.sav)}</span></label>
+        ${S.editGoal
+          ? `<div class="budr"><input id="goalIn" inputmode="decimal" placeholder="0.00" value="${S.profile.savingsGoal||""}" aria-label="Meta de ahorro mensual">
+              <div class="budbtns"><button class="del" data-goal="cancel">Cancelar</button><button class="mini" data-goal="save">Guardar</button></div>
+              <span class="err" id="goalErr"></span></div>`
+          : S.profile.savingsGoal
+            ? `<div class="budr"><b class="budamt sav">${fmt(S.profile.savingsGoal)}</b>
+                <div class="budbtns"><button class="mini ghost" data-goal="edit">Editar</button><button class="del" data-goal="del">Eliminar</button></div></div>`
+            : `<div class="budr"><span class="none">Sin meta</span><button class="mini" data-goal="edit">Definir meta</button></div>`}</div></div>
       <div class="sec" style="margin-top:18px"><div class="sec-h"><h2>Presupuesto mensual</h2></div>
       <p class="note">Pon un límite mensual por categoría. Te avisamos cuando llegues al 85%.</p>
       <div class="panel">${budRows(m)}</div>
@@ -507,6 +515,17 @@ document.addEventListener("click", async e => {
   else if (b.dataset.del) {
     if (!b.classList.contains("arm")) { b.classList.add("arm"); b.textContent="¿Eliminar?"; setTimeout(()=>{ if(b.isConnected){b.classList.remove("arm"); b.textContent="Eliminar";} },3000); return; }
     try { await store.remove(b.dataset.del); toast("Movimiento eliminado"); } catch(err){ toast("No se pudo eliminar. Intenta de nuevo."); }
+  }
+  else if (b.dataset.goal==="edit") { S.editGoal = true; render(); const i=$("goalIn"); if(i){ i.focus(); i.select(); } }
+  else if (b.dataset.goal==="cancel") { S.editGoal = false; render(); }
+  else if (b.dataset.goal==="save") {
+    const n = Math.round(parseFloat(($("goalIn").value||"").replace(",","."))*100)/100;
+    if (!(n>0)) { $("goalErr").textContent="Escribe un monto mayor que cero"; $("goalIn").focus(); return; }
+    S.editGoal = false; await store.setProfile({ savingsGoal: n }); toast("Meta de ahorro actualizada");
+  }
+  else if (b.dataset.goal==="del") {
+    if (!b.classList.contains("arm")) { b.classList.add("arm"); b.textContent="¿Eliminar?"; setTimeout(()=>{ if(b.isConnected){b.classList.remove("arm"); b.textContent="Eliminar";} },3000); return; }
+    await store.setProfile({ savingsGoal: 0 }); toast("Meta de ahorro eliminada");
   }
   else if (b.dataset.editbud) { S.editBud = b.dataset.editbud; render(); const i=$("editBudIn"); if(i){ i.focus(); i.select(); } }
   else if (b.dataset.cancelbud) { S.editBud = null; render(); }
@@ -555,21 +574,11 @@ document.addEventListener("click", async e => {
 $("prevM").onclick = () => { S.month = new Date(S.month.getFullYear(), S.month.getMonth()-1, 1); render(); };
 $("nextM").onclick = () => { S.month = new Date(S.month.getFullYear(), S.month.getMonth()+1, 1); render(); };
 
-let goalTimer;
-document.addEventListener("input", e => {
-  if (e.target.id==="goalIn") {
-    clearTimeout(goalTimer);
-    goalTimer = setTimeout(() => {
-      const n = parseFloat(e.target.value.replace(",","."));
-      const g = n>0 ? Math.round(n*100)/100 : 0;
-      if (g !== (+S.profile.savingsGoal||0)) store.setProfile({ savingsGoal: g }).then(()=>$("goalIn")?.focus());
-    }, 700);
-  }
-
-});
 document.addEventListener("keydown", e => {
   if (e.target.id==="editBudIn" && e.key==="Enter") { e.preventDefault(); document.querySelector("[data-savebud]")?.click(); }
   if (e.target.id==="editBudIn" && e.key==="Escape") { S.editBud = null; render(); }
+  if (e.target.id==="goalIn" && e.key==="Enter") { e.preventDefault(); document.querySelector('[data-goal="save"]')?.click(); }
+  if (e.target.id==="goalIn" && e.key==="Escape") { S.editGoal = false; render(); }
 });
 document.addEventListener("change", e => {
   if (e.target.id==="nbCat") { $("nbNameBox").hidden = e.target.value!=="__new"; if (e.target.value==="__new") $("nbName").focus(); } if (e.target.id==="cur") store.setProfile({ currency:e.target.value }); });
