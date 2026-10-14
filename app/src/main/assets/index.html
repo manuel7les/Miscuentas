@@ -150,6 +150,37 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .plansum{padding:14px;display:flex;flex-direction:column;gap:8px}
 .plansum .r{display:flex;justify-content:space-between;gap:10px;font-size:.9rem}
 .plansum .r.t{border-top:1px solid var(--line);padding-top:8px;font-weight:700}
+.paychips{display:flex;flex-wrap:wrap;gap:8px}
+.paychips button{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:9px 12px;font-weight:600;font-size:.88rem;display:flex;align-items:center;gap:7px}
+.paychips button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.cdot{display:inline-block;width:10px;height:10px;border-radius:3px;flex:none}
+.cardlist{display:flex;flex-direction:column}
+.crow{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 14px;border-top:1px solid var(--line)}
+.crow:first-child{border-top:0}
+.crow .ci2{width:40px;height:28px;border-radius:6px;position:relative}
+.crow .ci2::after{content:"";position:absolute;left:6px;top:8px;width:9px;height:7px;border-radius:2px;background:rgba(255,255,255,.75)}
+.crow .nm b{display:block;font-weight:600}
+.crow .nm span{display:block;font-size:.8rem;color:var(--muted)}
+.crow .rt{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.crow .rt b{font-family:var(--display);font-weight:800}
+.form2{padding:14px;display:flex;flex-direction:column;gap:12px}
+.form2 input,.form2 select{width:100%;box-sizing:border-box}
+.form2 .row2{grid-template-columns:1fr 1fr}
+.due{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 14px;border-top:1px solid var(--line)}
+.due:first-child{border-top:0}
+.due .dd{width:52px;height:52px;border-radius:14px;background:var(--soft);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+.due .dd b{font-family:var(--display);font-size:1.3rem;font-weight:800}
+.due .dd small{font-size:.66rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:3px}
+.due .nm b{display:block;font-weight:600}
+.due .nm span{display:block;font-size:.8rem;color:var(--muted)}
+.due .rt{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.due.paid{opacity:.6}
+.chip.soon{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}
+.chip.late{background:color-mix(in srgb,var(--out) 16%,transparent);color:var(--out)}
+.chip.paid{background:var(--save-soft);color:var(--save)}
+.chip.far{background:var(--soft);color:var(--muted)}
+.notifbar{padding:14px;display:flex;gap:12px;align-items:center;justify-content:space-between}
+.notifbar span{font-size:.86rem}
 .del{border:0;background:none;color:var(--muted);font-size:.74rem;padding:2px 0}
 .del.arm{color:var(--out);font-weight:700}
 
@@ -196,7 +227,7 @@ input,select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:
 .setrow:first-child{border-top:0}
 
 .tabs{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);z-index:5}
-.tabs nav{max-width:520px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
+.tabs nav{max-width:520px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
 .tabs button{border:0;background:none;padding:10px 4px 12px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:.72rem;font-weight:600;color:var(--muted)}
 .tabs button svg{width:22px;height:22px}
 .tabs button[aria-current="page"]{color:var(--accent)}
@@ -253,6 +284,7 @@ input,select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:
   <button data-tab="inicio" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Inicio</button>
   <button data-tab="movs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Movimientos</button>
   <button data-tab="pres"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l6 4"/></svg>Presupuestos</button>
+  <button data-tab="pagos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>Pagos</button>
   <button data-tab="ajustes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Ajustes</button>
 </nav></div>
 
@@ -270,10 +302,8 @@ input,select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:
       <div class="field"><label for="fDate">Fecha</label><input type="date" id="fDate"></div>
     </div>
     <div class="field" id="payBox"><label>Pagado con</label>
-      <div class="seg" role="group" aria-label="Pagado con">
-        <button type="button" id="pEfe" aria-pressed="true">Efectivo / débito</button>
-        <button type="button" id="pTar" aria-pressed="false">Tarjeta de crédito</button>
-      </div></div>
+      <div class="paychips" id="payOpts" role="group" aria-label="Pagado con"></div>
+      <span class="note" id="payHint" style="padding:0"></span></div>
     <div class="field"><label for="fNote">Descripción (opcional)</label><input id="fNote" maxlength="80" placeholder="Ej. Menú del almuerzo"></div>
     <div class="err" id="fErr"></div>
     <div class="row2">
@@ -328,7 +358,7 @@ const store = {
         const raw = localStorage.getItem("miscuentas");
         if (raw) { const o = JSON.parse(raw); S.txs = o.txs||[]; S.profile = { currency:"PEN", budgets:{}, ...(o.profile||{}) }; if (migrate()) this.saveLocal(); }
       } catch(e) { this.mode = "memory"; }
-      S.ready = true; render();
+      S.ready = true; syncNative(); render();
     }
     $("storeNote").textContent = this.mode==="db" ? "Tus datos se guardan en tu cuenta y solo tú los ves."
       : this.mode==="local" ? "Tus datos se guardan solo en este celular. Copia un respaldo desde Ajustes de vez en cuando."
@@ -347,11 +377,20 @@ const store = {
     S.profile = { ...S.profile, ...p };
     if (this.mode==="db") { await this.profRef.set(S.profile); }
     else { this.saveLocal(); }
+    syncNative();
     render();
   }
 };
 
 /* ---------- derived data ---------- */
+const CARD_COLORS = ["#3B5BDB","#C2185B","#00897B","#E6A100","#5E35B1","#E4572E"];
+function cardColor(id) { const cs = S.profile.cards||[]; const i = cs.findIndex(c=>c.id===id); return i<0 ? "#8A93AD" : (cs[i].color || CARD_COLORS[i%CARD_COLORS.length]); }
+function cardLabel(t) { const c = (S.profile.cards||[]).find(x=>x.id===t.card); return c ? c.name : (t.cardName || "Tarjeta"); }
+function byCardOf(list) {
+  const r = {};
+  for (const t of list) if (t.type==="gasto" && t.method==="tarjeta") { const k = t.card || "_none"; r[k] = (r[k]||0) + t.amount; }
+  return r;
+}
 function migrate() {
   // Lo registrado antes como gasto en la categoría "Ahorro" pasa a ser ahorro
   let changed = false;
@@ -371,7 +410,7 @@ function monthData() {
     else if (t.type==="ahorro") sav += t.amount;
     else { exp += t.amount; byCat[t.cat] = (byCat[t.cat]||0) + t.amount; if (t.method==="tarjeta") { card += t.amount; cardN++; } }
   }
-  return { list, inc, exp, sav, byCat, card, cardN };
+  return { list, inc, exp, sav, byCat, card, cardN, byCard: byCardOf(list) };
 }
 
 /* ---------- rendering ---------- */
@@ -425,7 +464,7 @@ function txList(list) {
     }
     const pos = t.type==="ingreso";
     html += `<div class="tx"><div class="ico">${abbr(t.cat)}</div>
-      <div class="nm"><b>${esc(t.note||t.cat)}</b><span>${esc(t.note?t.cat:(pos?"Ingreso":"Gasto"))}${t.method==="tarjeta"?'<i class="card-tag">TARJETA</i>':""}</span></div>
+      <div class="nm"><b>${esc(t.note||t.cat)}</b><span>${esc(t.note?t.cat:(pos?"Ingreso":"Gasto"))}${t.method==="tarjeta"?`<i class="card-tag" style="background:color-mix(in srgb,${cardColor(t.card)} 16%,transparent);color:${cardColor(t.card)}">${esc(cardLabel(t).toUpperCase())}</i>`:""}</span></div>
       <div class="amt"><span class="${pos?"pos":"neg"}">${pos?"+":"−"}${fmt(t.amount)}</span><button class="del" data-del="${esc(t.id)}">Eliminar</button></div></div>`;
   }
   return html;
@@ -499,6 +538,19 @@ function planChart(m) {
     <div class="legend2"><span><i style="background:var(--accent)"></i>Presupuestos ${fmt0(d.bud)}</span><span><i style="background:var(--save)"></i>Meta de ahorro ${fmt0(d.goal)}</span></div>
   </div>`;
 }
+function cardChart(m) {
+  const cards = S.profile.cards||[];
+  const keys = [...cards.map(c=>c.id), ...Object.keys(m.byCard).filter(k=>!cards.some(c=>c.id===k))];
+  if (!keys.length) return "";
+  const max = Math.max(...keys.map(k=>m.byCard[k]||0), 1);
+  const total = Object.values(m.byCard).reduce((a,b)=>a+b,0);
+  const rows = keys.map(k => {
+    const c = cards.find(x=>x.id===k); const v = m.byCard[k]||0;
+    const name = c ? c.name : k==="_none" ? "Sin asignar" : (m.list.find(t=>t.card===k)?.cardName || "Tarjeta eliminada");
+    return `<div class="hb"><span class="l">${esc(name)}</span><div class="t">${v?`<i style="width:${Math.max(v/max*72,1)}%;background:${cardColor(k)}"></i>`:""}<span>${fmt0(v)}</span></div></div>`;
+  }).join("");
+  return `<div class="sec" style="margin-top:18px"><div class="sec-h"><h2>Gasto por tarjeta</h2><span class="note">Total ${fmt0(total)}</span></div><div class="panel"><div class="hbars">${rows}</div></div></div>`;
+}
 function compareChart(m) {
   const pd = new Date(S.month.getFullYear(), S.month.getMonth()-1, 1), pk = ym(pd);
   const prev = {};
@@ -554,6 +606,89 @@ function savingsPanel(m) {
   </div>`;
 }
 
+/* ---------- pagos y recordatorios ---------- */
+const MES = ["ene","feb","mar","abr","may","jun","jul","ago","set","oct","nov","dic"];
+function payItems() {
+  const cards = (S.profile.cards||[]).filter(c=>c.day).map(c=>({ id:"card-"+c.id, name:c.name, day:+c.day, before:+(c.before||3), amount:0, kind:"card", ref:c.id }));
+  const rems = (S.profile.reminders||[]).map(r=>({ id:r.id, name:r.name, day:+r.day, before:+(r.before||3), amount:+r.amount||0, kind:"rem" }));
+  return [...cards, ...rems];
+}
+function dueInfo(it) {
+  const now = new Date(); const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const ymNow = ym(today); const paid = (S.profile.paid||{})[it.id] === ymNow;
+  const dim = new Date(today.getFullYear(), today.getMonth()+1, 0).getDate();
+  let due = new Date(today.getFullYear(), today.getMonth(), Math.min(it.day, dim));
+  let left = Math.round((due - today)/86400000);
+  let st, label;
+  if (paid) {
+    const nd = new Date(today.getFullYear(), today.getMonth()+1, 1); const ndim = new Date(nd.getFullYear(), nd.getMonth()+1, 0).getDate();
+    due = new Date(nd.getFullYear(), nd.getMonth(), Math.min(it.day, ndim)); left = Math.round((due - today)/86400000);
+    st = "paid"; label = "Pagado este mes";
+  } else if (left < 0) { st = "late"; label = `Venció hace ${-left} ${left===-1?"día":"días"}`; }
+  else if (left === 0) { st = "late"; label = "Vence hoy"; }
+  else if (left === 1) { st = "soon"; label = "Vence mañana"; }
+  else if (left <= it.before) { st = "soon"; label = `Vence en ${left} días`; }
+  else { st = "far"; label = `En ${left} días`; }
+  return { due, left, st, label, paid, ym: ymNow };
+}
+function syncNative() {
+  try {
+    if (!window.AndroidApp) return;
+    const items = payItems().map(it => ({ id: it.id, name: it.kind==="card" ? "Tarjeta "+it.name : it.name, day: it.day, before: it.before,
+      amount: it.amount ? fmt(it.amount) : "", paid: (S.profile.paid||{})[it.id] || "" }));
+    window.AndroidApp.setReminders(JSON.stringify(items));
+  } catch(e) {}
+}
+function notifStatus() { try { return window.AndroidApp ? window.AndroidApp.notifStatus() : "web"; } catch(e) { return "web"; } }
+window.onNotifChange = () => render();
+
+function pagosView(m) {
+  const items = payItems().map(it => ({ it, d: dueInfo(it) })).sort((a,b) => (a.d.paid-b.d.paid) || (a.d.due-b.d.due));
+  const ns = notifStatus();
+  const nb = ns==="granted" ? "" : ns==="web"
+    ? `<div class="panel notifbar"><span>Los avisos llegan solo en la app instalada en tu celular.</span></div>`
+    : `<div class="panel notifbar"><span>Activa las notificaciones para recibir los avisos de pago.</span><button class="mini" data-pg="notif">Activar</button></div>`;
+  const dueRows = !items.length
+    ? `<div class="empty"><h3>Sin pagos registrados</h3><span>Agrega tus tarjetas y tus pagos fijos abajo para recibir avisos antes de cada vencimiento.</span></div>`
+    : items.map(({it,d}) => {
+      const extra = it.kind==="card" ? `Cargado este mes: ${fmt(m.byCard[it.ref]||0)}` : it.amount ? fmt(it.amount) : "Pago mensual";
+      return `<div class="due ${d.paid?"paid":""}"><div class="dd"><b>${d.due.getDate()}</b><small>${MES[d.due.getMonth()]}</small></div>
+        <div class="nm"><b>${it.kind==="card"?'<i class="cdot" style="background:'+cardColor(it.ref)+';margin-right:6px"></i>':""}${esc(it.kind==="card"?"Tarjeta "+it.name:it.name)}</b><span>${extra}</span></div>
+        <div class="rt"><span class="chip ${d.st}">${d.label}</span>${d.paid
+          ? `<button class="del" data-pg="unpaid" data-id="${esc(it.id)}">Deshacer</button>`
+          : `<button class="mini" data-pg="paid" data-id="${esc(it.id)}">Marcar pagado</button>`}</div></div>`;
+    }).join("");
+  const befOpts = v => [1,2,3,5,7].map(n=>`<option value="${n}" ${+v===n?"selected":""}>${n} ${n===1?"día":"días"} antes</option>`).join("");
+  const dayOpts = v => Array.from({length:31},(_,i)=>i+1).map(n=>`<option value="${n}" ${+v===n?"selected":""}>Día ${n}</option>`).join("");
+  const cards = S.profile.cards||[];
+  const cardForm = (c) => `<div class="form2">
+      <div class="field"><label for="cfName">Nombre de la tarjeta</label><input id="cfName" maxlength="24" placeholder="Ej. Visa BCP" value="${esc(c?.name||"")}"></div>
+      <div class="row2"><div class="field"><label for="cfDay">Día de pago</label><select id="cfDay">${dayOpts(c?.day||15)}</select></div>
+        <div class="field"><label for="cfBefore">Avisarme</label><select id="cfBefore">${befOpts(c?.before||3)}</select></div></div>
+      <div class="err" id="cfErr"></div>
+      <div class="row2"><button class="btn ghost" data-pg="cardcancel">Cancelar</button><button class="btn" data-pg="cardsave" data-id="${esc(c?.id||"")}">${c?"Guardar":"Agregar tarjeta"}</button></div></div>`;
+  const cardRows = cards.map(c => S.pgEdit==="card:"+c.id ? cardForm(c) : `<div class="crow"><div class="ci2" style="background:${cardColor(c.id)}"></div>
+      <div class="nm"><b>${esc(c.name)}</b><span>Paga el día ${c.day} · aviso ${c.before||3} ${+(c.before||3)===1?"día":"días"} antes</span></div>
+      <div class="rt"><b>${fmt0(m.byCard[c.id]||0)}</b><div class="budbtns"><button class="mini ghost" data-pg="cardedit" data-id="${esc(c.id)}">Editar</button><button class="del" data-pg="carddel" data-id="${esc(c.id)}">Eliminar</button></div></div></div>`).join("");
+  const rems = S.profile.reminders||[];
+  const remForm = (r) => `<div class="form2">
+      <div class="field"><label for="rfName">¿Qué pagas?</label><input id="rfName" maxlength="30" placeholder="Ej. Alquiler, Cuota del terreno" value="${esc(r?.name||"")}"></div>
+      <div class="row2"><div class="field"><label for="rfDay">Día de pago</label><select id="rfDay">${dayOpts(r?.day||1)}</select></div>
+        <div class="field"><label for="rfAmt">Monto (opcional)</label><input id="rfAmt" inputmode="decimal" placeholder="0.00" value="${r?.amount||""}"></div></div>
+      <div class="field"><label for="rfBefore">Avisarme</label><select id="rfBefore">${befOpts(r?.before||3)}</select></div>
+      <div class="err" id="rfErr"></div>
+      <div class="row2"><button class="btn ghost" data-pg="remcancel">Cancelar</button><button class="btn" data-pg="remsave" data-id="${esc(r?.id||"")}">${r?"Guardar":"Agregar pago"}</button></div></div>`;
+  const remRows = rems.map(r => S.pgEdit==="rem:"+r.id ? remForm(r) : `<div class="crow"><div class="ico" style="width:40px;height:40px">${esc(abbr(r.name))}</div>
+      <div class="nm"><b>${esc(r.name)}</b><span>Día ${r.day}${r.amount?` · ${fmt(r.amount)}`:""} · aviso ${r.before||3} ${+(r.before||3)===1?"día":"días"} antes</span></div>
+      <div class="rt"><div class="budbtns"><button class="mini ghost" data-pg="remedit" data-id="${esc(r.id)}">Editar</button><button class="del" data-pg="remdel" data-id="${esc(r.id)}">Eliminar</button></div></div></div>`).join("");
+  return `${nb}
+    <div class="sec" ${nb?'style="margin-top:18px"':""}><div class="sec-h"><h2>Próximos pagos</h2></div><div class="panel">${dueRows}</div></div>
+    <div class="sec" style="margin-top:18px"><div class="sec-h"><h2>Mis tarjetas de crédito</h2>${S.pgEdit==="card:new"?"":'<button class="link" data-pg="cardnew">+ Agregar</button>'}</div>
+      <div class="panel cardlist">${cardRows}${S.pgEdit==="card:new"?cardForm(null):!cards.length?`<div class="empty"><span>Agrega tus tarjetas para separar el gasto de cada una y recibir aviso antes de su fecha de pago.</span></div>`:""}</div></div>
+    <div class="sec" style="margin-top:18px"><div class="sec-h"><h2>Otros pagos mensuales</h2>${S.pgEdit==="rem:new"?"":'<button class="link" data-pg="remnew">+ Agregar</button>'}</div>
+      <div class="panel cardlist">${remRows}${S.pgEdit==="rem:new"?remForm(null):!rems.length?`<div class="empty"><span>Por ejemplo: alquiler o vivienda, cuota del terreno, préstamos, servicios.</span></div>`:""}</div></div>`;
+}
+
 function render() {
   const m = monthData();
   renderHero(m);
@@ -563,21 +698,27 @@ function render() {
     v.innerHTML = `
       <div class="sec"><div class="sec-h"><h2>¿En qué se va tu dinero?</h2></div><div class="panel">${donut(m)}</div></div>
       <div class="sec" style="margin-top:18px"><div class="sec-h"><h2>Comparado con el mes anterior</h2></div><div class="panel">${compareChart(m)}</div></div>
+      ${cardChart(m)}
       <div class="sec" style="margin-top:18px"><div class="sec-h"><h2>Presupuesto del mes</h2><button class="link" data-go="pres">Editar</button></div><div class="panel">${budgetChart(m)}</div></div>
       <div class="sec" style="margin-top:18px"><div class="sec-h"><h2>Tu plan vs tus ingresos</h2></div><div class="panel">${planChart(m)}</div></div>
       <div class="sec" style="margin-top:18px"><div class="sec-h"><h2>Tu ahorro</h2></div>${savingsPanel(m)}</div>`;
   } else if (S.tab==="movs") {
     const f = S.filter;
     const list = m.list.filter(t => f==="todos" || (f==="tarjeta" ? t.method==="tarjeta" : t.type===f));
-    const cardBox = m.cardN ? `<div class="panel cardsum"><div class="ci" aria-hidden="true"></div>
-        <div><b>Cargado a tu tarjeta</b><span>${m.cardN} ${m.cardN===1?"compra":"compras"} este mes</span></div>
-        <div class="amt">${fmt(m.card)}</div></div>` : "";
+    const cks = Object.keys(m.byCard);
+    const cardBox = !cks.length ? "" : `<div class="panel cardlist" style="margin-top:4px">${cks.map(k=>{
+        const c = (S.profile.cards||[]).find(x=>x.id===k);
+        const name = c ? c.name : k==="_none" ? "Tarjeta sin asignar" : (m.list.find(t=>t.card===k)?.cardName || "Tarjeta eliminada");
+        return `<div class="crow"><div class="ci2" style="background:${cardColor(k)}"></div><div class="nm"><b>${esc(name)}</b><span>Cargado este mes</span></div><div class="rt"><b>${fmt(m.byCard[k])}</b></div></div>`;
+      }).join("")}</div>`;
     v.innerHTML = `<div class="sec"><div class="sec-h"><h2>Registrar</h2></div>
       <div class="actions"><button class="g" data-new="gasto"><b>−</b>Gasto</button><button class="i" data-new="ingreso"><b>+</b>Ingreso</button><button class="a" data-new="ahorro"><b>↑</b>Ahorro</button></div>
       ${cardBox}</div>
       <div class="sec" style="margin-top:18px"><div class="sec-h"><h2>Movimientos</h2><span class="note">${list.length} en el mes${f==="tarjeta"&&list.length?" · "+fmt(m.card):""}</span></div>
       <div class="filters">${[["todos","Todos"],["gasto","Gastos"],["ingreso","Ingresos"],["ahorro","Ahorros"],["tarjeta","Tarjeta"]].map(([k,l])=>`<button data-filter="${k}" aria-pressed="${f===k}">${l}</button>`).join("")}</div>
       <div class="panel">${txList(list)}</div></div>`;
+  } else if (S.tab==="pagos") {
+    v.innerHTML = pagosView(m);
   } else if (S.tab==="pres") {
     const pd = planData(m), pv = planVerdict(pd);
     v.innerHTML = `<div class="sec"><div class="sec-h"><h2>Resumen de tu plan</h2></div>
@@ -638,6 +779,52 @@ document.addEventListener("click", async e => {
   else if (b.dataset.del) {
     if (!b.classList.contains("arm")) { b.classList.add("arm"); b.textContent="¿Eliminar?"; setTimeout(()=>{ if(b.isConnected){b.classList.remove("arm"); b.textContent="Eliminar";} },3000); return; }
     try { await store.remove(b.dataset.del); toast("Movimiento eliminado"); } catch(err){ toast("No se pudo eliminar. Intenta de nuevo."); }
+  }
+  else if (b.dataset.pg) {
+    const a = b.dataset.pg, id = b.dataset.id;
+    const newId = () => Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+    if (a==="notif") { try { window.AndroidApp.requestNotif(); } catch(e){} }
+    else if (a==="paid" || a==="unpaid") {
+      const paid = { ...(S.profile.paid||{}) };
+      if (a==="paid") paid[id] = ym(new Date()); else delete paid[id];
+      await store.setProfile({ paid }); toast(a==="paid"?"Marcado como pagado":"Pago desmarcado");
+    }
+    else if (a==="cardnew") { S.pgEdit="card:new"; render(); $("cfName")?.focus(); }
+    else if (a==="cardedit") { S.pgEdit="card:"+id; render(); $("cfName")?.focus(); }
+    else if (a==="cardcancel" || a==="remcancel") { S.pgEdit=null; render(); }
+    else if (a==="cardsave") {
+      const name = $("cfName").value.trim().replace(/\s+/g," ");
+      if (!name) { $("cfErr").textContent="Escribe el nombre de la tarjeta."; $("cfName").focus(); return; }
+      const cards = [...(S.profile.cards||[])];
+      if (cards.some(c=>c.id!==id && c.name.toLowerCase()===name.toLowerCase())) { $("cfErr").textContent="Ya tienes una tarjeta con ese nombre."; return; }
+      const data = { name, day:+$("cfDay").value, before:+$("cfBefore").value };
+      if (id) { const i = cards.findIndex(c=>c.id===id); cards[i] = { ...cards[i], ...data }; } else cards.push({ id:newId(), ...data });
+      S.pgEdit=null; await store.setProfile({ cards }); toast(id?"Tarjeta actualizada":"Tarjeta agregada");
+    }
+    else if (a==="carddel") {
+      if (!b.classList.contains("arm")) { b.classList.add("arm"); b.textContent="¿Eliminar?"; setTimeout(()=>{ if(b.isConnected){b.classList.remove("arm"); b.textContent="Eliminar";} },3000); return; }
+      const c = (S.profile.cards||[]).find(x=>x.id===id);
+      if (c) for (const t of S.txs) if (t.card===id && !t.cardName) t.cardName = c.name;
+      const paid = { ...(S.profile.paid||{}) }; delete paid["card-"+id];
+      await store.setProfile({ cards:(S.profile.cards||[]).filter(x=>x.id!==id), paid }); toast("Tarjeta eliminada");
+    }
+    else if (a==="remnew") { S.pgEdit="rem:new"; render(); $("rfName")?.focus(); }
+    else if (a==="remedit") { S.pgEdit="rem:"+id; render(); $("rfName")?.focus(); }
+    else if (a==="remsave") {
+      const name = $("rfName").value.trim().replace(/\s+/g," ");
+      if (!name) { $("rfErr").textContent="Escribe qué pagas, por ejemplo Alquiler."; $("rfName").focus(); return; }
+      const raw = $("rfAmt").value.trim(); const amt = raw ? Math.round(parseFloat(raw.replace(",","."))*100)/100 : 0;
+      if (raw && !(amt>0)) { $("rfErr").textContent="El monto debe ser mayor que cero, o déjalo vacío."; return; }
+      const rems = [...(S.profile.reminders||[])];
+      const data = { name, day:+$("rfDay").value, before:+$("rfBefore").value, amount: amt };
+      if (id) { const i = rems.findIndex(r=>r.id===id); rems[i] = { ...rems[i], ...data }; } else rems.push({ id:"r"+newId(), ...data });
+      S.pgEdit=null; await store.setProfile({ reminders: rems }); toast(id?"Pago actualizado":"Pago agregado");
+    }
+    else if (a==="remdel") {
+      if (!b.classList.contains("arm")) { b.classList.add("arm"); b.textContent="¿Eliminar?"; setTimeout(()=>{ if(b.isConnected){b.classList.remove("arm"); b.textContent="Eliminar";} },3000); return; }
+      const paid = { ...(S.profile.paid||{}) }; delete paid[id];
+      await store.setProfile({ reminders:(S.profile.reminders||[]).filter(r=>r.id!==id), paid }); toast("Pago eliminado");
+    }
   }
   else if (b.dataset.goal==="edit") { S.editGoal = true; render(); const i=$("goalIn"); if(i){ i.focus(); i.select(); } }
   else if (b.dataset.goal==="cancel") { S.editGoal = false; render(); }
@@ -708,7 +895,15 @@ document.addEventListener("change", e => {
 
 /* ---------- add sheet ---------- */
 let curType = "gasto", curPay = "efectivo";
-function setPay(p) { curPay = p; $("pEfe").setAttribute("aria-pressed", p==="efectivo"); $("pTar").setAttribute("aria-pressed", p==="tarjeta"); }
+function payOptions() {
+  const cards = S.profile.cards||[];
+  return [["efectivo","Efectivo / débito"], ...(cards.length ? cards.map(c=>["card:"+c.id, c.name]) : [["tarjeta","Tarjeta de crédito"]])];
+}
+function setPay(p) {
+  curPay = p;
+  $("payOpts").innerHTML = payOptions().map(([k,l])=>`<button type="button" data-pay="${esc(k)}" aria-pressed="${k===p}">${k==="efectivo"?"":'<i class="cdot" style="background:'+cardColor(k.slice(5))+'"></i>'}${esc(l)}</button>`).join("");
+  $("payHint").textContent = (S.profile.cards||[]).length ? "" : "Agrega tus tarjetas en la pestaña Pagos para separar el gasto de cada una.";
+}
 function setType(t) {
   curType = t;
   $("tGasto").setAttribute("aria-pressed", t==="gasto"); $("tIngreso").setAttribute("aria-pressed", t==="ingreso"); $("tAhorro").setAttribute("aria-pressed", t==="ahorro");
@@ -731,20 +926,22 @@ $("scrim").addEventListener("click", e => { if (e.target.id==="scrim") closeShee
 $("tGasto").onclick = () => setType("gasto");
 $("tIngreso").onclick = () => setType("ingreso");
 $("tAhorro").onclick = () => setType("ahorro");
-$("pEfe").onclick = () => setPay("efectivo");
-$("pTar").onclick = () => setPay("tarjeta");
+$("payOpts").addEventListener("click", e => { const b = e.target.closest("[data-pay]"); if (b) setPay(b.dataset.pay); });
 $("txForm").addEventListener("submit", async e => {
   e.preventDefault();
   const amount = Math.round(parseFloat(($("fAmt").value||"").replace(/[^\d.,]/g,"").replace(",","."))*100)/100;
   if (!(amount>0)) { $("fErr").textContent="Escribe un monto mayor que cero."; $("fAmt").focus(); return; }
   if (!$("fDate").value) { $("fErr").textContent="Elige una fecha."; return; }
   const tx = { type:curType, amount, cat: curType==="ahorro" ? "Ahorro" : $("fCat").value, date:$("fDate").value, note:$("fNote").value.trim(), createdAt:new Date().toISOString() };
-  if (curType==="gasto") tx.method = curPay;
+  if (curType==="gasto") {
+    if (curPay.startsWith("card:")) { const c = (S.profile.cards||[]).find(x=>x.id===curPay.slice(5)); tx.method="tarjeta"; tx.card=c?.id; tx.cardName=c?.name; }
+    else tx.method = curPay;
+  }
   $("save").disabled = true;
   try {
     await store.add(tx);
     const [y,mo] = tx.date.split("-").map(Number); S.month = new Date(y, mo-1, 1);
-    closeSheet(); render(); toast(curType==="ahorro"?"¡Ahorro registrado!":curType==="ingreso"?"Ingreso guardado":curPay==="tarjeta"?"Gasto con tarjeta guardado":"Gasto guardado");
+    closeSheet(); render(); toast(curType==="ahorro"?"¡Ahorro registrado!":curType==="ingreso"?"Ingreso guardado":curPay!=="efectivo"?"Gasto con tarjeta guardado":"Gasto guardado");
   } catch(err) { $("fErr").textContent = err?.code==="quota_exceeded" ? "Ya no hay espacio para más movimientos. Elimina algunos antiguos." : "No se pudo guardar. Revisa tu conexión e intenta de nuevo."; }
   $("save").disabled = false;
 });
@@ -752,6 +949,7 @@ $("txForm").addEventListener("submit", async e => {
 let tt;
 function toast(msg){ const t=$("toast"); t.textContent=msg; t.hidden=false; clearTimeout(tt); tt=setTimeout(()=>t.hidden=true,2200); }
 
+document.addEventListener("visibilitychange", () => { if (!document.hidden && S.ready) render(); });
 render();
 store.init();
 </script>
